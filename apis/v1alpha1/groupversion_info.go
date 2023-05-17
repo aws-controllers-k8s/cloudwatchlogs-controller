@@ -22,7 +22,7 @@ import (
 
 var (
 	// GroupVersion is the API Group Version used to register the objects
-	GroupVersion = schema.GroupVersion{Group: "cloudwatch.services.k8s.aws", Version: "v1alpha1"}
+	GroupVersion = schema.GroupVersion{Group: "cloudwatchlogs.services.k8s.aws", Version: "v1alpha1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}

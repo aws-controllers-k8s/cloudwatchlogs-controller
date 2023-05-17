@@ -17,8 +17,8 @@ from pathlib import Path
 
 from acktest.resources import load_resource_file
 
-SERVICE_NAME = "cloudwatch"
-CRD_GROUP = "cloudwatch.services.k8s.aws"
+SERVICE_NAME = "cloudwatchlogs"
+CRD_GROUP = "cloudwatchlogs.services.k8s.aws"
 CRD_VERSION = "v1alpha1"
 
 # PyTest marker for the current service
@@ -27,7 +27,7 @@ service_marker = pytest.mark.service(arg=SERVICE_NAME)
 bootstrap_directory = Path(__file__).parent
 resource_directory = Path(__file__).parent / "resources"
 
-def load_cloudwatch_resource(resource_name: str, additional_replacements: Dict[str, Any] = {}):
+def load_resource(resource_name: str, additional_replacements: Dict[str, Any] = {}):
     """ Overrides the default `load_resource_file` to access the specific resources
     directory for the current service.
     """

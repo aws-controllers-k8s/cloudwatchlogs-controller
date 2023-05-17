@@ -1,6 +1,34 @@
+sdk_names:
+  model_name: logs
+  client_interface: CloudWatchLogsAPI
+  client_struct: CloudWatchLogs
 ignore:
   resource_names:
-      - ExportTask
-      - LogGroup
-      - LogStream
-model_name: logs
+   - ExportTask
+   #- LogGroup
+   - LogStream
+resources:
+  LogGroup:
+    exceptions:
+      terminal_codes:
+        - InvalidParameterException
+    fields:
+      Name:
+        type: string
+        is_primary_key: true
+      KMSKeyID:
+        references:
+          resource: Key
+          service_name: kms
+          path: Status.ACKResourceMetadata.ARN
+    renames:
+      operations:
+        DescribeLogGroups:
+          input_fields:
+            LogGroupNamePattern: Name
+        CreateLogGroup:
+          input_fields:
+            LogGroupName: Name
+        DeleteLogGroup:
+          input_fields:
+            LogGroupName: Name

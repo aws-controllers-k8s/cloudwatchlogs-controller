@@ -27,3 +27,102 @@ var (
 	_ = &aws.JSONValue{}
 	_ = ackv1alpha1.AWSAccountID("")
 )
+
+// Represents a cross-account destination that receives subscription log events.
+type Destination struct {
+	ARN          *string `json:"arn,omitempty"`
+	CreationTime *int64  `json:"creationTime,omitempty"`
+}
+
+// Represents an export task.
+type ExportTask struct {
+	From         *int64  `json:"from,omitempty"`
+	LogGroupName *string `json:"logGroupName,omitempty"`
+	To           *int64  `json:"to,omitempty"`
+}
+
+// Represents the status of an export task.
+type ExportTaskExecutionInfo struct {
+	CompletionTime *int64 `json:"completionTime,omitempty"`
+	CreationTime   *int64 `json:"creationTime,omitempty"`
+}
+
+// Represents a matched event.
+type FilteredLogEvent struct {
+	IngestionTime *int64 `json:"ingestionTime,omitempty"`
+	Timestamp     *int64 `json:"timestamp,omitempty"`
+}
+
+// Represents a log event, which is a record of activity that was recorded by
+// the application or resource being monitored.
+type InputLogEvent struct {
+	Timestamp *int64 `json:"timestamp,omitempty"`
+}
+
+// Represents a log group.
+type LogGroup_SDK struct {
+	ARN                  *string `json:"arn,omitempty"`
+	CreationTime         *int64  `json:"creationTime,omitempty"`
+	DataProtectionStatus *string `json:"dataProtectionStatus,omitempty"`
+	KMSKeyID             *string `json:"kmsKeyID,omitempty"`
+	LogGroupName         *string `json:"logGroupName,omitempty"`
+	MetricFilterCount    *int64  `json:"metricFilterCount,omitempty"`
+	// The number of days to retain the log events in the specified log group. Possible
+	// values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731,
+	// 1827, 2192, 2557, 2922, 3288, and 3653.
+	//
+	// To set a log group so that its log events do not expire, use DeleteRetentionPolicy
+	// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_DeleteRetentionPolicy.html).
+	RetentionInDays *int64 `json:"retentionInDays,omitempty"`
+	StoredBytes     *int64 `json:"storedBytes,omitempty"`
+}
+
+// Represents a log stream, which is a sequence of log events from a single
+// emitter of logs.
+type LogStream struct {
+	ARN                 *string `json:"arn,omitempty"`
+	CreationTime        *int64  `json:"creationTime,omitempty"`
+	FirstEventTimestamp *int64  `json:"firstEventTimestamp,omitempty"`
+	LastEventTimestamp  *int64  `json:"lastEventTimestamp,omitempty"`
+	LastIngestionTime   *int64  `json:"lastIngestionTime,omitempty"`
+	StoredBytes         *int64  `json:"storedBytes,omitempty"`
+}
+
+// Metric filters express how CloudWatch Logs would extract metric observations
+// from ingested log events and transform them into metric data in a CloudWatch
+// metric.
+type MetricFilter struct {
+	CreationTime *int64  `json:"creationTime,omitempty"`
+	LogGroupName *string `json:"logGroupName,omitempty"`
+}
+
+// Represents a log event.
+type OutputLogEvent struct {
+	IngestionTime *int64 `json:"ingestionTime,omitempty"`
+	Timestamp     *int64 `json:"timestamp,omitempty"`
+}
+
+// This structure contains details about a saved CloudWatch Logs Insights query
+// definition.
+type QueryDefinition struct {
+	LastModified *int64 `json:"lastModified,omitempty"`
+}
+
+// Information about one CloudWatch Logs Insights query that matches the request
+// in a DescribeQueries operation.
+type QueryInfo struct {
+	CreateTime   *int64  `json:"createTime,omitempty"`
+	LogGroupName *string `json:"logGroupName,omitempty"`
+}
+
+// A policy enabling one or more entities to put logs to a log group in this
+// account.
+type ResourcePolicy struct {
+	LastUpdatedTime *int64 `json:"lastUpdatedTime,omitempty"`
+}
+
+// Represents a subscription filter.
+type SubscriptionFilter struct {
+	CreationTime *int64  `json:"creationTime,omitempty"`
+	LogGroupName *string `json:"logGroupName,omitempty"`
+}

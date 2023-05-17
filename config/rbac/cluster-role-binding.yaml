@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ack-cloudwatch-controller-rolebinding
+  name: ack-cloudwatchlogs-controller-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ack-cloudwatch-controller
+  name: ack-cloudwatchlogs-controller
 subjects:
 - kind: ServiceAccount
-  name: ack-cloudwatch-controller
+  name: ack-cloudwatchlogs-controller
   namespace: ack-system

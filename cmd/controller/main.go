@@ -18,13 +18,14 @@ package main
 import (
 	"os"
 
+	kmsapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	ackcfg "github.com/aws-controllers-k8s/runtime/pkg/config"
 	ackrt "github.com/aws-controllers-k8s/runtime/pkg/runtime"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
 	ackrtutil "github.com/aws-controllers-k8s/runtime/pkg/util"
 	ackrtwebhook "github.com/aws-controllers-k8s/runtime/pkg/webhook"
-	svcsdk "github.com/aws/aws-sdk-go/service/cloudwatch"
+	svcsdk "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	flag "github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,15 +33,17 @@ import (
 	ctrlrt "sigs.k8s.io/controller-runtime"
 	ctrlrtmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 
-	svctypes "github.com/aws-controllers-k8s/cloudwatch-controller/apis/v1alpha1"
-	svcresource "github.com/aws-controllers-k8s/cloudwatch-controller/pkg/resource"
+	svctypes "github.com/aws-controllers-k8s/cloudwatchlogs-controller/apis/v1alpha1"
+	svcresource "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource"
 
-	"github.com/aws-controllers-k8s/cloudwatch-controller/pkg/version"
+	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/log_group"
+
+	"github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/version"
 )
 
 var (
-	awsServiceAPIGroup    = "cloudwatch.services.k8s.aws"
-	awsServiceAlias       = "cloudwatch"
+	awsServiceAPIGroup    = "cloudwatchlogs.services.k8s.aws"
+	awsServiceAlias       = "cloudwatchlogs"
 	awsServiceEndpointsID = svcsdk.EndpointsID
 	scheme                = runtime.NewScheme()
 	setupLog              = ctrlrt.Log.WithName("setup")
@@ -51,6 +54,7 @@ func init() {
 
 	_ = svctypes.AddToScheme(scheme)
 	_ = ackv1alpha1.AddToScheme(scheme)
+	_ = kmsapitypes.AddToScheme(scheme)
 }
 
 func main() {

@@ -1,0 +1,8 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: $LOG_GROUP_NAME
+spec:
+  name: $LOG_GROUP_NAME
+  tags:
+    environment: dev

@@ -15,80 +15,50 @@
 
 package v1alpha1
 
-type ActionsSuppressedBy string
+type DataProtectionStatus string
 
 const (
-	ActionsSuppressedBy_WaitPeriod      ActionsSuppressedBy = "WaitPeriod"
-	ActionsSuppressedBy_ExtensionPeriod ActionsSuppressedBy = "ExtensionPeriod"
-	ActionsSuppressedBy_Alarm           ActionsSuppressedBy = "Alarm"
+	DataProtectionStatus_ACTIVATED DataProtectionStatus = "ACTIVATED"
+	DataProtectionStatus_DELETED   DataProtectionStatus = "DELETED"
+	DataProtectionStatus_ARCHIVED  DataProtectionStatus = "ARCHIVED"
+	DataProtectionStatus_DISABLED  DataProtectionStatus = "DISABLED"
 )
 
-type AlarmType string
+type Distribution string
 
 const (
-	AlarmType_CompositeAlarm AlarmType = "CompositeAlarm"
-	AlarmType_MetricAlarm    AlarmType = "MetricAlarm"
+	Distribution_Random      Distribution = "Random"
+	Distribution_ByLogStream Distribution = "ByLogStream"
 )
 
-type AnomalyDetectorStateValue string
+type ExportTaskStatusCode string
 
 const (
-	AnomalyDetectorStateValue_PENDING_TRAINING          AnomalyDetectorStateValue = "PENDING_TRAINING"
-	AnomalyDetectorStateValue_TRAINED_INSUFFICIENT_DATA AnomalyDetectorStateValue = "TRAINED_INSUFFICIENT_DATA"
-	AnomalyDetectorStateValue_TRAINED                   AnomalyDetectorStateValue = "TRAINED"
+	ExportTaskStatusCode_CANCELLED      ExportTaskStatusCode = "CANCELLED"
+	ExportTaskStatusCode_COMPLETED      ExportTaskStatusCode = "COMPLETED"
+	ExportTaskStatusCode_FAILED         ExportTaskStatusCode = "FAILED"
+	ExportTaskStatusCode_PENDING        ExportTaskStatusCode = "PENDING"
+	ExportTaskStatusCode_PENDING_CANCEL ExportTaskStatusCode = "PENDING_CANCEL"
+	ExportTaskStatusCode_RUNNING        ExportTaskStatusCode = "RUNNING"
 )
 
-type AnomalyDetectorType string
+type OrderBy string
 
 const (
-	AnomalyDetectorType_SINGLE_METRIC AnomalyDetectorType = "SINGLE_METRIC"
-	AnomalyDetectorType_METRIC_MATH   AnomalyDetectorType = "METRIC_MATH"
+	OrderBy_LogStreamName OrderBy = "LogStreamName"
+	OrderBy_LastEventTime OrderBy = "LastEventTime"
 )
 
-type ComparisonOperator string
+type QueryStatus string
 
 const (
-	ComparisonOperator_GreaterThanOrEqualToThreshold            ComparisonOperator = "GreaterThanOrEqualToThreshold"
-	ComparisonOperator_GreaterThanThreshold                     ComparisonOperator = "GreaterThanThreshold"
-	ComparisonOperator_LessThanThreshold                        ComparisonOperator = "LessThanThreshold"
-	ComparisonOperator_LessThanOrEqualToThreshold               ComparisonOperator = "LessThanOrEqualToThreshold"
-	ComparisonOperator_LessThanLowerOrGreaterThanUpperThreshold ComparisonOperator = "LessThanLowerOrGreaterThanUpperThreshold"
-	ComparisonOperator_LessThanLowerThreshold                   ComparisonOperator = "LessThanLowerThreshold"
-	ComparisonOperator_GreaterThanUpperThreshold                ComparisonOperator = "GreaterThanUpperThreshold"
-)
-
-type EvaluationState string
-
-const (
-	EvaluationState_PARTIAL_DATA EvaluationState = "PARTIAL_DATA"
-)
-
-type HistoryItemType string
-
-const (
-	HistoryItemType_ConfigurationUpdate HistoryItemType = "ConfigurationUpdate"
-	HistoryItemType_StateUpdate         HistoryItemType = "StateUpdate"
-	HistoryItemType_Action              HistoryItemType = "Action"
-)
-
-type MetricStreamOutputFormat string
-
-const (
-	MetricStreamOutputFormat_json             MetricStreamOutputFormat = "json"
-	MetricStreamOutputFormat_opentelemetry0_7 MetricStreamOutputFormat = "opentelemetry0.7"
-)
-
-type RecentlyActive string
-
-const (
-	RecentlyActive_PT3H RecentlyActive = "PT3H"
-)
-
-type ScanBy string
-
-const (
-	ScanBy_TimestampDescending ScanBy = "TimestampDescending"
-	ScanBy_TimestampAscending  ScanBy = "TimestampAscending"
+	QueryStatus_Scheduled QueryStatus = "Scheduled"
+	QueryStatus_Running   QueryStatus = "Running"
+	QueryStatus_Complete  QueryStatus = "Complete"
+	QueryStatus_Failed    QueryStatus = "Failed"
+	QueryStatus_Cancelled QueryStatus = "Cancelled"
+	QueryStatus_Timeout   QueryStatus = "Timeout"
+	QueryStatus_Unknown   QueryStatus = "Unknown"
 )
 
 type StandardUnit string
@@ -121,31 +91,4 @@ const (
 	StandardUnit_Terabits_Second  StandardUnit = "Terabits/Second"
 	StandardUnit_Count_Second     StandardUnit = "Count/Second"
 	StandardUnit_None             StandardUnit = "None"
-)
-
-type StateValue string
-
-const (
-	StateValue_OK                StateValue = "OK"
-	StateValue_ALARM             StateValue = "ALARM"
-	StateValue_INSUFFICIENT_DATA StateValue = "INSUFFICIENT_DATA"
-)
-
-type Statistic string
-
-const (
-	Statistic_SampleCount Statistic = "SampleCount"
-	Statistic_Average     Statistic = "Average"
-	Statistic_Sum         Statistic = "Sum"
-	Statistic_Minimum     Statistic = "Minimum"
-	Statistic_Maximum     Statistic = "Maximum"
-)
-
-type StatusCode string
-
-const (
-	StatusCode_Complete      StatusCode = "Complete"
-	StatusCode_InternalError StatusCode = "InternalError"
-	StatusCode_PartialData   StatusCode = "PartialData"
-	StatusCode_Forbidden     StatusCode = "Forbidden"
 )

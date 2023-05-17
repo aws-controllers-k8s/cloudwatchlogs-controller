@@ -3,12 +3,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
-  name: ack-cloudwatch-writer
+  name: ack-cloudwatchlogs-writer
   namespace: default
 rules:
 - apiGroups:
-  - cloudwatch.services.k8s.aws
+  - cloudwatchlogs.services.k8s.aws
   resources:
+  - loggroups
   verbs:
   - create
   - delete
@@ -18,8 +19,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - cloudwatch.services.k8s.aws
+  - cloudwatchlogs.services.k8s.aws
   resources:
+  - loggroups
   verbs:
   - get
   - patch

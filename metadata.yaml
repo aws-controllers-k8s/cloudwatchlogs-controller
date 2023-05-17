@@ -1,8 +1,8 @@
 service:
-  full_name:
-  short_name:
-  link:
-  documentation:
+  full_name: Amazon CloudWatch Logs 
+  short_name: CloudWatch Logs
+  link: https://docs.aws.amazon.com/cloudwatch/index.html
+  documentation: https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/Welcome.html
 api_versions:
   - api_version: v1alpha1
     status: available
