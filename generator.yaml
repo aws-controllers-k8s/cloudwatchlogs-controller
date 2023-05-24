@@ -12,6 +12,8 @@ resources:
     exceptions:
       terminal_codes:
         - InvalidParameterException
+    reconcile:
+      requeue_on_success_seconds: 60
     fields:
       Name:
         type: string
@@ -21,6 +23,31 @@ resources:
           resource: Key
           service_name: kms
           path: Status.ACKResourceMetadata.ARN
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.CreationTime
+      DataProtectionStatus:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.DataProtectionStatus
+      MetricFilterCount:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.MetricFilterCount
+      RetentionInDays:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.RetentionInDays
+      StoredBytes:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.StoredBytes
     renames:
       operations:
         DescribeLogGroups:

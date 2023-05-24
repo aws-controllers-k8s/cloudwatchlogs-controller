@@ -95,10 +95,35 @@ func (rm *resourceManager) sdkFind(
 			tmpARN := ackv1alpha1.AWSResourceName(*elem.Arn)
 			ko.Status.ACKResourceMetadata.ARN = &tmpARN
 		}
+		if elem.CreationTime != nil {
+			ko.Status.CreationTime = elem.CreationTime
+		} else {
+			ko.Status.CreationTime = nil
+		}
+		if elem.DataProtectionStatus != nil {
+			ko.Status.DataProtectionStatus = elem.DataProtectionStatus
+		} else {
+			ko.Status.DataProtectionStatus = nil
+		}
 		if elem.KmsKeyId != nil {
 			ko.Spec.KMSKeyID = elem.KmsKeyId
 		} else {
 			ko.Spec.KMSKeyID = nil
+		}
+		if elem.MetricFilterCount != nil {
+			ko.Status.MetricFilterCount = elem.MetricFilterCount
+		} else {
+			ko.Status.MetricFilterCount = nil
+		}
+		if elem.RetentionInDays != nil {
+			ko.Status.RetentionInDays = elem.RetentionInDays
+		} else {
+			ko.Status.RetentionInDays = nil
+		}
+		if elem.StoredBytes != nil {
+			ko.Status.StoredBytes = elem.StoredBytes
+		} else {
+			ko.Status.StoredBytes = nil
 		}
 		found = true
 		break

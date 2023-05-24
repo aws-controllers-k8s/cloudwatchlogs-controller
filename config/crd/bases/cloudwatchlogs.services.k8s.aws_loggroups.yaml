@@ -136,6 +136,27 @@ spec:
                   - type
                   type: object
                 type: array
+              creationTime:
+                description: The creation time of the log group, expressed as the
+                  number of milliseconds after Jan 1, 1970 00:00:00 UTC.
+                format: int64
+                type: integer
+              dataProtectionStatus:
+                description: Displays whether this log group has a protection policy,
+                  or whether it had one in the past. For more information, see PutDataProtectionPolicy
+                  (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDataProtectionPolicy.html).
+                type: string
+              metricFilterCount:
+                description: The number of metric filters.
+                format: int64
+                type: integer
+              retentionInDays:
+                format: int64
+                type: integer
+              storedBytes:
+                description: The number of bytes stored.
+                format: int64
+                type: integer
             type: object
         type: object
     served: true

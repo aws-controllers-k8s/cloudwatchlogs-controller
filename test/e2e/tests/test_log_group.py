@@ -71,3 +71,7 @@ class TestLogGroup:
         condition.assert_synced(ref)
 
         assert log_group.exists(log_group_name)
+
+        cr = k8s.get_resource(ref)
+        assert 'creationTime' in cr['status']
+        assert cr['status']['creationTime'] > 0

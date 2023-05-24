@@ -57,6 +57,22 @@ type LogGroupStatus struct {
 	// resource
 	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
+	// The creation time of the log group, expressed as the number of milliseconds
+	// after Jan 1, 1970 00:00:00 UTC.
+	// +kubebuilder:validation:Optional
+	CreationTime *int64 `json:"creationTime,omitempty"`
+	// Displays whether this log group has a protection policy, or whether it had
+	// one in the past. For more information, see PutDataProtectionPolicy (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDataProtectionPolicy.html).
+	// +kubebuilder:validation:Optional
+	DataProtectionStatus *string `json:"dataProtectionStatus,omitempty"`
+	// The number of metric filters.
+	// +kubebuilder:validation:Optional
+	MetricFilterCount *int64 `json:"metricFilterCount,omitempty"`
+	// +kubebuilder:validation:Optional
+	RetentionInDays *int64 `json:"retentionInDays,omitempty"`
+	// The number of bytes stored.
+	// +kubebuilder:validation:Optional
+	StoredBytes *int64 `json:"storedBytes,omitempty"`
 }
 
 // LogGroup is the Schema for the LogGroups API
