@@ -133,6 +133,10 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
+	if err := rm.addRetentionToSpec(ctx, r, ko); err != nil {
+		return nil, err
+	}
+
 	return &resource{ko}, nil
 }
 
@@ -154,7 +158,7 @@ func (rm *resourceManager) newListRequestPayload(
 	res := &svcsdk.DescribeLogGroupsInput{}
 
 	if r.ko.Spec.Name != nil {
-		res.SetLogGroupNamePattern(*r.ko.Spec.Name)
+		res.SetLogGroupNamePrefix(*r.ko.Spec.Name)
 	}
 
 	return res, nil
@@ -189,6 +193,16 @@ func (rm *resourceManager) sdkCreate(
 	ko := desired.ko.DeepCopy()
 
 	rm.setStatusDefaults(ko)
+	if err := rm.updateRetentionPeriod(ctx, desired); err != nil {
+		return nil, err
+	}
+	if desired.ko.Spec.RetentionDays != nil {
+		ko.Status.RetentionInDays = desired.ko.Spec.RetentionDays
+	} else {
+		var retention int64 = 0
+		ko.Status.RetentionInDays = &retention
+	}
+
 	return &resource{ko}, nil
 }
 
@@ -227,7 +241,7 @@ func (rm *resourceManager) sdkUpdate(
 	latest *resource,
 	delta *ackcompare.Delta,
 ) (*resource, error) {
-	return nil, ackerr.NewTerminalError(ackerr.NotImplemented)
+	return rm.customUpdateLogGroup(ctx, desired, latest, delta)
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API
@@ -352,8 +366,13 @@ func (rm *resourceManager) updateConditions(
 			recoverableCondition.Message = nil
 		}
 	}
-	// Required to avoid the "declared but not used" error in the default case
-	_ = syncCondition
+	if syncCondition == nil && onSuccess {
+		syncCondition = &ackv1alpha1.Condition{
+			Type:   ackv1alpha1.ConditionTypeResourceSynced,
+			Status: corev1.ConditionTrue,
+		}
+		ko.Status.Conditions = append(ko.Status.Conditions, syncCondition)
+	}
 	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}

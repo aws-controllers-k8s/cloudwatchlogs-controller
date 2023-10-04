@@ -56,20 +56,25 @@ def wait_until_deleted(
             break
 
 
-def exists(log_group_name):
-    """Returns True if the supplied Log Group record exists, False otherwise.
+def exists_with_retention_period(log_group_name: str, retention: int):
+    """Returns True if the supplied Log Group record exists and its retention
+    period matches the 'retention' argument, False otherwise.
     """
-    return get(log_group_name) is not None
+    log_group = get(log_group_name)
+    if log_group is not None:
+        if log_group['retentionInDays'] == retention:
+            return True
+    return False
 
 
-def get(log_group_name):
+def get(log_group_name: str):
     """Returns a dict containing the Log Group record from the CloudWatch Logs
     API.
 
     If no such Log Group exists, returns None.
     """
     c = boto3.client('logs')
-    resp = c.describe_log_groups(logGroupNamePattern=log_group_name)
+    resp = c.describe_log_groups(logGroupNamePrefix=log_group_name)
     if len(resp['logGroups']) == 1:
         return resp['logGroups'][0]
     return None

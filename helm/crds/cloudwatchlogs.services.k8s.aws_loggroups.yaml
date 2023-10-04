@@ -56,6 +56,9 @@ spec:
                 type: object
               name:
                 type: string
+              retentionDays:
+                format: int64
+                type: integer
               tags:
                 additionalProperties:
                   type: string

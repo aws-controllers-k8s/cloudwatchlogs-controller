@@ -12,6 +12,8 @@ resources:
     exceptions:
       terminal_codes:
         - InvalidParameterException
+    reconcile:
+      requeue_on_success_seconds: 60
     fields:
       Name:
         type: string
@@ -21,6 +23,10 @@ resources:
           resource: Key
           service_name: kms
           path: Status.ACKResourceMetadata.ARN
+      RetentionDays:
+        from:
+          operation: PutRetentionPolicy
+          path: RetentionInDays
       CreationTime:
         is_read_only: true
         from:
@@ -50,10 +56,19 @@ resources:
       operations:
         DescribeLogGroups:
           input_fields:
-            LogGroupNamePattern: Name
+            LogGroupNamePrefix: Name
         CreateLogGroup:
           input_fields:
             LogGroupName: Name
         DeleteLogGroup:
           input_fields:
             LogGroupName: Name
+    hooks:
+      delta_pre_compare:
+        code: customPreCompare(delta, a, b)
+      sdk_create_post_set_output:
+        template_path: hooks/log_group/sdk_create_post_set_output.go.tpl
+      sdk_read_many_post_set_output:
+        template_path: hooks/log_group/sdk_read_many_post_set_output.go.tpl
+    update_operation:
+      custom_method_name: customUpdateLogGroup

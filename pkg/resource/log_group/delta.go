@@ -42,6 +42,7 @@ func newResourceDelta(
 		delta.Add("", a, b)
 		return delta
 	}
+	customPreCompare(delta, a, b)
 
 	if ackcompare.HasNilDifference(a.ko.Spec.KMSKeyID, b.ko.Spec.KMSKeyID) {
 		delta.Add("Spec.KMSKeyID", a.ko.Spec.KMSKeyID, b.ko.Spec.KMSKeyID)
@@ -58,6 +59,13 @@ func newResourceDelta(
 	} else if a.ko.Spec.Name != nil && b.ko.Spec.Name != nil {
 		if *a.ko.Spec.Name != *b.ko.Spec.Name {
 			delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.RetentionDays, b.ko.Spec.RetentionDays) {
+		delta.Add("Spec.RetentionDays", a.ko.Spec.RetentionDays, b.ko.Spec.RetentionDays)
+	} else if a.ko.Spec.RetentionDays != nil && b.ko.Spec.RetentionDays != nil {
+		if *a.ko.Spec.RetentionDays != *b.ko.Spec.RetentionDays {
+			delta.Add("Spec.RetentionDays", a.ko.Spec.RetentionDays, b.ko.Spec.RetentionDays)
 		}
 	}
 	if !ackcompare.MapStringStringEqual(ToACKTags(a.ko.Spec.Tags), ToACKTags(b.ko.Spec.Tags)) {

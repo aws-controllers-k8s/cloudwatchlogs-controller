@@ -4,6 +4,6 @@ metadata:
   name: $LOG_GROUP_NAME
 spec:
   name: $LOG_GROUP_NAME
-  retentionDays: 1
+  retentionDays: 2
   tags:
     environment: dev

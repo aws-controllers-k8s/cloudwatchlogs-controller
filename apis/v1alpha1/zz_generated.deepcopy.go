@@ -227,6 +227,11 @@ func (in *LogGroupSpec) DeepCopyInto(out *LogGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RetentionDays != nil {
+		in, out := &in.RetentionDays, &out.RetentionDays
+		*out = new(int64)
+		**out = **in
+	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make(map[string]*string, len(*in))
