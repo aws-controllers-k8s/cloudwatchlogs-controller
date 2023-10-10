@@ -13,7 +13,7 @@ description: |-
   **About Amazon CloudWatch Logs**
 
 
-  {ADD YOUR DESCRIPTION HERE}
+  You can use Amazon CloudWatch Logs to monitor, store, and access your log files from Amazon Elastic Compute Cloud (Amazon EC2) instances, AWS CloudTrail, Route 53, and other sources.
 
 
   **About the AWS Controllers for Kubernetes**
@@ -28,13 +28,11 @@ description: |-
 
   Please follow the following link: [Red Hat OpenShift](https://aws-controllers-k8s.github.io/community/docs/user-docs/openshift/)
 samples:
-- kind: ExampleCustomKind
-  spec: '{}'
-- kind: SecondExampleCustomKind
+- kind: LogGroup
   spec: '{}'
 maintainers:
 - name: "cloudwatch maintainer team"
   email: "ack-maintainers@amazon.com"
 links:
 - name: Amazon CloudWatch Logs Developer Resources
-  url: https://aws.amazon.com/CloudWatch Logs/developer-resources/
+  url: https://aws.amazon.com/cloudwatch/developer-resources/
