@@ -30,6 +30,8 @@ RESOURCE_PLURAL = 'loggroups'
 DELETE_WAIT_AFTER_SECONDS = 5
 UPDATE_WAIT_AFTER_SECONDS = 5
 
+SUBSCRIPTION_LAMBDA_ARN = "arn:aws:lambda:us-west-2:901803866795:function:ack-tests-DO-NOT-DELETE"
+
 @pytest.fixture
 def _log_group(request):
     log_group_name = random_suffix_name("ack-test-log-group", 20)
@@ -108,3 +110,74 @@ class TestLogGroup:
         # Example condition message:
         # InvalidParameterException: Invalid retention value. Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
         assert expected_msg in terminal_condition['message']
+
+    @pytest.mark.resource_data({'resource_file': 'log_group'})
+    def test_subscription_group(self, _log_group):
+        (ref, cr) = _log_group
+        log_group_name = ref.name
+
+        condition.assert_synced(ref)
+
+        retention = cr['spec']['retentionDays']
+        assert log_group.exists_with_retention_period(log_group_name, retention)
+
+        cr = k8s.get_resource(ref)
+        assert 'creationTime' in cr['status']
+        assert cr['status']['creationTime'] > 0
+
+        assert len(log_group.get_subscription_filters(log_group_name)) == 0
+
+        # add new subscription filters
+        updates = {
+            "spec": {
+                "subscriptionFilters": [
+                    {
+                        "destinationARN": SUBSCRIPTION_LAMBDA_ARN,
+                        "filterName": "filter1",
+                        "filterPattern": ""
+                    },
+                    {
+                        "destinationARN": SUBSCRIPTION_LAMBDA_ARN,
+                        "filterName": "filter2",
+                        "filterPattern": ""
+                    }
+                ]
+            }
+        }
+
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(UPDATE_WAIT_AFTER_SECONDS)
+
+        assert len(log_group.get_subscription_filters(log_group_name)) == 2
+
+        # update one filter
+        updates = {
+            "spec": {
+                "subscriptionFilters": [
+                    {
+                        "destinationARN": SUBSCRIPTION_LAMBDA_ARN,
+                        "filterName": "filter2",
+                        "filterPattern": '{ $.eventType = "UpdateTrail" }'
+                    }
+                ]
+            }
+        }
+
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(UPDATE_WAIT_AFTER_SECONDS)
+
+        log_group_subscription_filters = log_group.get_subscription_filters(log_group_name)
+        assert len(log_group_subscription_filters) == 1
+        assert log_group_subscription_filters[0]['filterPattern'] == '{ $.eventType = "UpdateTrail" }'
+
+        # delete all the filters
+        updates = {
+            "spec": {
+                "subscriptionFilters": []
+            }
+        }
+
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(UPDATE_WAIT_AFTER_SECONDS)
+
+        assert len(log_group.get_subscription_filters(log_group_name)) == 0

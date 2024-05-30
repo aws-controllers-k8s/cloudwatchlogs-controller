@@ -136,7 +136,10 @@ func (rm *resourceManager) sdkFind(
 	if err := rm.addRetentionToSpec(ctx, r, ko); err != nil {
 		return nil, err
 	}
-
+	ko.Spec.SubscriptionFilters, err = rm.getSubscriptionFilters(ctx, r.ko.Spec.Name)
+	if err != nil {
+		return nil, err
+	}
 	return &resource{ko}, nil
 }
 
@@ -201,6 +204,16 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		var retention int64 = 0
 		ko.Status.RetentionInDays = &retention
+	}
+	// Well well, the ack runtime logic does some desired on latest data merge
+	// which is later persisted in the api-server. This behaviour causes the
+	// controller to deleted the conttent of subscription filters in the api-server
+	// and detect no delta triggering no updates to the SubscriptionFilters.
+	//
+	// It's the first we see this issue. @a-hilaly to investigate and determine
+	// whether this is a bug everywhere or something specific to cloudwatch.
+	if len(desired.ko.Spec.SubscriptionFilters) > 0 {
+		return &resource{ko}, &ackrequeue.RequeueNeeded{}
 	}
 
 	return &resource{ko}, nil
@@ -366,13 +379,8 @@ func (rm *resourceManager) updateConditions(
 			recoverableCondition.Message = nil
 		}
 	}
-	if syncCondition == nil && onSuccess {
-		syncCondition = &ackv1alpha1.Condition{
-			Type:   ackv1alpha1.ConditionTypeResourceSynced,
-			Status: corev1.ConditionTrue,
-		}
-		ko.Status.Conditions = append(ko.Status.Conditions, syncCondition)
-	}
+	// Required to avoid the "declared but not used" error in the default case
+	_ = syncCondition
 	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}

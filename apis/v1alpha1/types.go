@@ -32,6 +32,7 @@ var (
 type Destination struct {
 	ARN          *string `json:"arn,omitempty"`
 	CreationTime *int64  `json:"creationTime,omitempty"`
+	RoleARN      *string `json:"roleARN,omitempty"`
 }
 
 // Represents an export task.
@@ -93,13 +94,33 @@ type LogStream struct {
 // metric.
 type MetricFilter struct {
 	CreationTime *int64  `json:"creationTime,omitempty"`
-	LogGroupName *string `json:"logGroupName,omitempty"`
+	FilterName   *string `json:"filterName,omitempty"`
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	FilterPattern *string `json:"filterPattern,omitempty"`
+	LogGroupName  *string `json:"logGroupName,omitempty"`
 }
 
 // Represents a log event.
 type OutputLogEvent struct {
 	IngestionTime *int64 `json:"ingestionTime,omitempty"`
 	Timestamp     *int64 `json:"timestamp,omitempty"`
+}
+
+type PutSubscriptionFilterInput struct {
+	DestinationARN *string `json:"destinationARN,omitempty"`
+	// The method used to distribute log data to the destination, which can be either
+	// random or grouped by log stream.
+	Distribution *string `json:"distribution,omitempty"`
+	FilterName   *string `json:"filterName,omitempty"`
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	FilterPattern *string `json:"filterPattern,omitempty"`
+	RoleARN       *string `json:"roleARN,omitempty"`
 }
 
 // This structure contains details about a saved CloudWatch Logs Insights query
@@ -123,6 +144,17 @@ type ResourcePolicy struct {
 
 // Represents a subscription filter.
 type SubscriptionFilter struct {
-	CreationTime *int64  `json:"creationTime,omitempty"`
-	LogGroupName *string `json:"logGroupName,omitempty"`
+	CreationTime   *int64  `json:"creationTime,omitempty"`
+	DestinationARN *string `json:"destinationARN,omitempty"`
+	// The method used to distribute log data to the destination, which can be either
+	// random or grouped by log stream.
+	Distribution *string `json:"distribution,omitempty"`
+	FilterName   *string `json:"filterName,omitempty"`
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	FilterPattern *string `json:"filterPattern,omitempty"`
+	LogGroupName  *string `json:"logGroupName,omitempty"`
+	RoleARN       *string `json:"roleARN,omitempty"`
 }

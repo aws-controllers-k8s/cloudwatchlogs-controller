@@ -30,8 +30,9 @@ type LogGroupSpec struct {
 	KMSKeyID  *string                                  `json:"kmsKeyID,omitempty"`
 	KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
 	// +kubebuilder:validation:Required
-	Name          *string `json:"name"`
-	RetentionDays *int64  `json:"retentionDays,omitempty"`
+	Name                *string                       `json:"name"`
+	RetentionDays       *int64                        `json:"retentionDays,omitempty"`
+	SubscriptionFilters []*PutSubscriptionFilterInput `json:"subscriptionFilters,omitempty"`
 	// The key-value pairs to use for the tags.
 	//
 	// You can grant users access to certain log groups while preventing them from

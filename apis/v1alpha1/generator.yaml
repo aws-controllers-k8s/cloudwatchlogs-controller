@@ -7,13 +7,13 @@ ignore:
    - ExportTask
    #- LogGroup
    - LogStream
+  field_paths:
+  - PutSubscriptionFilterInput.LogGroupName
 resources:
   LogGroup:
     exceptions:
       terminal_codes:
         - InvalidParameterException
-    reconcile:
-      requeue_on_success_seconds: 60
     fields:
       Name:
         type: string
@@ -23,6 +23,9 @@ resources:
           resource: Key
           service_name: kms
           path: Status.ACKResourceMetadata.ARN
+      SubscriptionFilters:
+        custom_field:
+          list_of: PutSubscriptionFilterInput
       RetentionDays:
         from:
           operation: PutRetentionPolicy

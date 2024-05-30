@@ -15,6 +15,7 @@
 
 import datetime
 import time
+import logging
 
 import boto3
 import pytest
@@ -79,6 +80,19 @@ def get(log_group_name: str):
         return resp['logGroups'][0]
     return None
 
+def get_subscription_filters(log_group_name: str):
+    """Returns a dict containing Subscription groups attached to a LogGroup
+
+    If no such Log Group exists, returns None.
+    """
+    c = boto3.client('logs')
+    try:
+        resp = c.describe_subscription_filters(logGroupName=log_group_name)
+        logging.info(resp)
+        return resp['subscriptionFilters']
+    except Exception as e:
+        logging.info(e)
+        return None
 
 def get_tags(log_group_arn):
     """Returns a dict containing the Log Group's tag records from the
