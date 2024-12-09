@@ -8,7 +8,7 @@ roleRef:
   name: ack-namespaces-cache-cloudwatchlogs-controller
 subjects:
 - kind: ServiceAccount
-  name: ack-cloudwatchlogs-controller
+  name: {{ include "ack-cloudwatchlogs-controller.service-account.name" . }}
   namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -22,5 +22,5 @@ roleRef:
   name: ack-configmaps-cache-cloudwatchlogs-controller
 subjects:
 - kind: ServiceAccount
-  name: ack-cloudwatchlogs-controller
+  name: {{ include "ack-cloudwatchlogs-controller.service-account.name" . }}
   namespace: {{ .Release.Namespace }}
