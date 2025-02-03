@@ -1,14 +1,18 @@
 sdk_names:
-  model_name: logs
+  model_name: cloudwatch-logs
   client_interface: CloudWatchLogsAPI
   client_struct: CloudWatchLogs
 ignore:
   resource_names:
-   - ExportTask
-   #- LogGroup
-   - LogStream
+    - Delivery
+    - ExportTask
+    #- LogGroup
+    - LogStream
+    - LogAnomalyDetector
   field_paths:
-  - PutSubscriptionFilterInput.LogGroupName
+    - PutSubscriptionFilterInput.LogGroupName
+    - CreateLogGroupInput.LogGroupClass
+    - PutSubscriptionFilterInput.ApplyOnTransformedLogs
 resources:
   LogGroup:
     exceptions:

@@ -18,7 +18,9 @@ import (
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	svcsdk "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
+	"github.com/aws/aws-sdk-go/aws"
 
 	svcapitypes "github.com/aws-controllers-k8s/cloudwatchlogs-controller/apis/v1alpha1"
 )
@@ -33,11 +35,11 @@ func (rm *resourceManager) updateRetentionPeriod(
 
 	if desired.ko.Spec.RetentionDays != nil && *desired.ko.Spec.RetentionDays != 0 {
 		input := &svcsdk.PutRetentionPolicyInput{
-			RetentionInDays: desired.ko.Spec.RetentionDays,
+			RetentionInDays: aws.Int32(int32(*desired.ko.Spec.RetentionDays)),
 			LogGroupName:    desired.ko.Spec.Name,
 		}
 
-		_, err = rm.sdkapi.PutRetentionPolicyWithContext(ctx, input)
+		_, err = rm.sdkapi.PutRetentionPolicy(ctx, input)
 		rm.metrics.RecordAPICall("UPDATE", "PutRetentionPolicy", err)
 		if err != nil {
 			return err
@@ -49,7 +51,7 @@ func (rm *resourceManager) updateRetentionPeriod(
 		LogGroupName: desired.ko.Spec.Name,
 	}
 
-	_, err = rm.sdkapi.DeleteRetentionPolicyWithContext(ctx, input)
+	_, err = rm.sdkapi.DeleteRetentionPolicy(ctx, input)
 	rm.metrics.RecordAPICall("UPDATE", "DeleteRetentionPolicy", err)
 	if err != nil {
 		return err
@@ -99,10 +101,12 @@ func (rm *resourceManager) addSubscriptionFilter(
 		FilterName:     subscriptionFilter.FilterName,
 		DestinationArn: subscriptionFilter.DestinationARN,
 		FilterPattern:  subscriptionFilter.FilterPattern,
-		Distribution:   subscriptionFilter.Distribution,
+	}
+	if subscriptionFilter.Distribution != nil {
+		input.Distribution = svcsdktypes.Distribution(*subscriptionFilter.Distribution)
 	}
 
-	output, err = rm.sdkapi.PutSubscriptionFilterWithContext(ctx, input)
+	output, err = rm.sdkapi.PutSubscriptionFilter(ctx, input)
 	rm.metrics.RecordAPICall("UPDATE", "PutSubscriptionFilter", err)
 	if err != nil {
 		return nil, err
@@ -125,7 +129,7 @@ func (rm *resourceManager) removeSubscriptionFilter(
 		LogGroupName: desired.ko.Spec.Name,
 	}
 
-	output, err = rm.sdkapi.DeleteSubscriptionFilterWithContext(ctx, input)
+	output, err = rm.sdkapi.DeleteSubscriptionFilter(ctx, input)
 	rm.metrics.RecordAPICall("UPDATE", "DeleteSubscriptionFilter", err)
 	if err != nil {
 		return nil, err
@@ -272,7 +276,7 @@ func (rm *resourceManager) getSubscriptionFilters(ctx context.Context, name *str
 
 	for {
 		var resp *svcsdk.DescribeSubscriptionFiltersOutput
-		resp, err = rm.sdkapi.DescribeSubscriptionFiltersWithContext(ctx, input)
+		resp, err = rm.sdkapi.DescribeSubscriptionFilters(ctx, input)
 		rm.metrics.RecordAPICall("READ_MANY", "DescribeSubscriptionFilters", err)
 		if err != nil {
 			return nil, err
@@ -284,7 +288,7 @@ func (rm *resourceManager) getSubscriptionFilters(ctx context.Context, name *str
 				DestinationARN: subscriptionFilter.DestinationArn,
 				FilterPattern:  subscriptionFilter.FilterPattern,
 				RoleARN:        subscriptionFilter.RoleArn,
-				Distribution:   subscriptionFilter.Distribution,
+				Distribution:   aws.String(string(subscriptionFilter.Distribution)),
 			})
 		}
 		if resp.NextToken == nil {

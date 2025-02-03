@@ -28,6 +28,111 @@ var (
 	_ = ackv1alpha1.AWSAccountID("")
 )
 
+// A structure that contains information about one CloudWatch Logs account policy.
+type AccountPolicy struct {
+	AccountID       *string `json:"accountID,omitempty"`
+	LastUpdatedTime *int64  `json:"lastUpdatedTime,omitempty"`
+}
+
+// Contains information about one anomaly detector in the account.
+type AnomalyDetector struct {
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	FilterPattern *string `json:"filterPattern,omitempty"`
+	KMSKeyID      *string `json:"kmsKeyID,omitempty"`
+}
+
+// This structure contains information about one delivery in your account.
+//
+// A delivery is a connection between a logical delivery source and a logical
+// delivery destination.
+//
+// For more information, see CreateDelivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateDelivery.html).
+//
+// To update an existing delivery configuration, use UpdateDeliveryConfiguration
+// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_UpdateDeliveryConfiguration.html).
+type Delivery struct {
+	ARN                    *string            `json:"arn,omitempty"`
+	DeliveryDestinationARN *string            `json:"deliveryDestinationARN,omitempty"`
+	Tags                   map[string]*string `json:"tags,omitempty"`
+}
+
+// This structure contains information about one delivery destination in your
+// account. A delivery destination is an Amazon Web Services resource that represents
+// an Amazon Web Services service that logs can be sent to. CloudWatch Logs,
+// Amazon S3, are supported as Firehose delivery destinations.
+//
+// To configure logs delivery between a supported Amazon Web Services service
+// and a destination, you must do the following:
+//
+//   - Create a delivery source, which is a logical object that represents
+//     the resource that is actually sending the logs. For more information,
+//     see PutDeliverySource (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDeliverySource.html).
+//
+//   - Create a delivery destination, which is a logical object that represents
+//     the actual delivery destination.
+//
+//   - If you are delivering logs cross-account, you must use PutDeliveryDestinationPolicy
+//     (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDeliveryDestinationPolicy.html)
+//     in the destination account to assign an IAM policy to the destination.
+//     This policy allows delivery to that destination.
+//
+//   - Create a delivery by pairing exactly one delivery source and one delivery
+//     destination. For more information, see CreateDelivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateDelivery.html).
+//
+// You can configure a single delivery source to send logs to multiple destinations
+// by creating multiple deliveries. You can also create multiple deliveries
+// to configure multiple delivery sources to send logs to the same delivery
+// destination.
+type DeliveryDestination struct {
+	ARN  *string            `json:"arn,omitempty"`
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// A structure that contains information about one logs delivery destination.
+type DeliveryDestinationConfiguration struct {
+	DestinationResourceARN *string `json:"destinationResourceARN,omitempty"`
+}
+
+// This structure contains information about one delivery source in your account.
+// A delivery source is an Amazon Web Services resource that sends logs to an
+// Amazon Web Services destination. The destination can be CloudWatch Logs,
+// Amazon S3, or Firehose.
+//
+// Only some Amazon Web Services services support being configured as a delivery
+// source. These services are listed as Supported [V2 Permissions] in the table
+// at Enabling logging from Amazon Web Services services. (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AWS-logs-and-resource-policy.html)
+//
+// To configure logs delivery between a supported Amazon Web Services service
+// and a destination, you must do the following:
+//
+//   - Create a delivery source, which is a logical object that represents
+//     the resource that is actually sending the logs. For more information,
+//     see PutDeliverySource (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDeliverySource.html).
+//
+//   - Create a delivery destination, which is a logical object that represents
+//     the actual delivery destination. For more information, see PutDeliveryDestination
+//     (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDeliveryDestination.html).
+//
+//   - If you are delivering logs cross-account, you must use PutDeliveryDestinationPolicy
+//     (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDeliveryDestinationPolicy.html)
+//     in the destination account to assign an IAM policy to the destination.
+//     This policy allows delivery to that destination.
+//
+//   - Create a delivery by pairing exactly one delivery source and one delivery
+//     destination. For more information, see CreateDelivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateDelivery.html).
+//
+// You can configure a single delivery source to send logs to multiple destinations
+// by creating multiple deliveries. You can also create multiple deliveries
+// to configure multiple delivery sources to send logs to the same delivery
+// destination.
+type DeliverySource struct {
+	ARN  *string            `json:"arn,omitempty"`
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
 // Represents a cross-account destination that receives subscription log events.
 type Destination struct {
 	ARN          *string `json:"arn,omitempty"`
@@ -48,10 +153,24 @@ type ExportTaskExecutionInfo struct {
 	CreationTime   *int64 `json:"creationTime,omitempty"`
 }
 
+// This structure describes one log event field that is used as an index in
+// at least one index policy in this account.
+type FieldIndex struct {
+	FirstEventTime *int64 `json:"firstEventTime,omitempty"`
+	LastEventTime  *int64 `json:"lastEventTime,omitempty"`
+	LastScanTime   *int64 `json:"lastScanTime,omitempty"`
+}
+
 // Represents a matched event.
 type FilteredLogEvent struct {
 	IngestionTime *int64 `json:"ingestionTime,omitempty"`
 	Timestamp     *int64 `json:"timestamp,omitempty"`
+}
+
+// This structure contains information about one field index policy in this
+// account.
+type IndexPolicy struct {
+	LastUpdateTime *int64 `json:"lastUpdateTime,omitempty"`
 }
 
 // Represents a log event, which is a record of activity that was recorded by
@@ -60,17 +179,43 @@ type InputLogEvent struct {
 	Timestamp *int64 `json:"timestamp,omitempty"`
 }
 
+// This object contains the information for one log event returned in a Live
+// Tail stream.
+type LiveTailSessionLogEvent struct {
+	IngestionTime *int64 `json:"ingestionTime,omitempty"`
+	Timestamp     *int64 `json:"timestamp,omitempty"`
+}
+
+// This object contains information about this Live Tail session, including
+// the log groups included and the log stream filters, if any.
+type LiveTailSessionStart struct {
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	LogEventFilterPattern *string `json:"logEventFilterPattern,omitempty"`
+}
+
+// This structure contains the information for one sample log event that is
+// associated with an anomaly found by a log anomaly detector.
+type LogEvent struct {
+	Timestamp *int64 `json:"timestamp,omitempty"`
+}
+
 // Represents a log group.
 type LogGroup_SDK struct {
-	ARN                  *string `json:"arn,omitempty"`
-	CreationTime         *int64  `json:"creationTime,omitempty"`
-	DataProtectionStatus *string `json:"dataProtectionStatus,omitempty"`
-	KMSKeyID             *string `json:"kmsKeyID,omitempty"`
-	LogGroupName         *string `json:"logGroupName,omitempty"`
-	MetricFilterCount    *int64  `json:"metricFilterCount,omitempty"`
+	ARN                  *string   `json:"arn,omitempty"`
+	CreationTime         *int64    `json:"creationTime,omitempty"`
+	DataProtectionStatus *string   `json:"dataProtectionStatus,omitempty"`
+	InheritedProperties  []*string `json:"inheritedProperties,omitempty"`
+	KMSKeyID             *string   `json:"kmsKeyID,omitempty"`
+	LogGroupARN          *string   `json:"logGroupARN,omitempty"`
+	LogGroupClass        *string   `json:"logGroupClass,omitempty"`
+	LogGroupName         *string   `json:"logGroupName,omitempty"`
+	MetricFilterCount    *int64    `json:"metricFilterCount,omitempty"`
 	// The number of days to retain the log events in the specified log group. Possible
 	// values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731,
-	// 1827, 2192, 2557, 2922, 3288, and 3653.
+	// 1096, 1827, 2192, 2557, 2922, 3288, and 3653.
 	//
 	// To set a log group so that its log events do not expire, use DeleteRetentionPolicy
 	// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_DeleteRetentionPolicy.html).
@@ -101,6 +246,31 @@ type MetricFilter struct {
 	// in the log event message.
 	FilterPattern *string `json:"filterPattern,omitempty"`
 	LogGroupName  *string `json:"logGroupName,omitempty"`
+}
+
+// This structure contains information about the OpenSearch Service application
+// used for this integration. An OpenSearch Service application is the web application
+// created by the integration with CloudWatch Logs. It hosts the vended logs
+// dashboards.
+type OpenSearchApplication struct {
+	ApplicationARN *string `json:"applicationARN,omitempty"`
+}
+
+// This structure contains information about the OpenSearch Service collection
+// used for this integration. An OpenSearch Service collection is a logical
+// grouping of one or more indexes that represent an analytics workload. For
+// more information, see Creating and managing OpenSearch Service Serverless
+// collections (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-collections.html).
+type OpenSearchCollection struct {
+	CollectionARN *string `json:"collectionARN,omitempty"`
+}
+
+// This structure contains configuration details about an integration between
+// CloudWatch Logs and OpenSearch Service.
+type OpenSearchResourceConfig struct {
+	ApplicationARN    *string `json:"applicationARN,omitempty"`
+	DataSourceRoleARN *string `json:"dataSourceRoleARN,omitempty"`
+	KMSKeyARN         *string `json:"kmsKeyARN,omitempty"`
 }
 
 // Represents a log event.

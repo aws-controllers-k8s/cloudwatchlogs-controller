@@ -28,8 +28,9 @@ import (
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	smithy "github.com/aws/smithy-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -40,8 +41,7 @@ import (
 var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
-	_ = &aws.JSONValue{}
-	_ = &svcsdk.CloudWatchLogs{}
+	_ = &svcsdk.Client{}
 	_ = &svcapitypes.LogGroup{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -49,6 +49,7 @@ var (
 	_ = &reflect.Value{}
 	_ = fmt.Sprintf("")
 	_ = &ackrequeue.NoRequeue{}
+	_ = &aws.Config{}
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -73,10 +74,11 @@ func (rm *resourceManager) sdkFind(
 		return nil, err
 	}
 	var resp *svcsdk.DescribeLogGroupsOutput
-	resp, err = rm.sdkapi.DescribeLogGroupsWithContext(ctx, input)
+	resp, err = rm.sdkapi.DescribeLogGroups(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeLogGroups", err)
 	if err != nil {
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+		var awsErr smithy.APIError
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -100,8 +102,8 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Status.CreationTime = nil
 		}
-		if elem.DataProtectionStatus != nil {
-			ko.Status.DataProtectionStatus = elem.DataProtectionStatus
+		if elem.DataProtectionStatus != "" {
+			ko.Status.DataProtectionStatus = aws.String(string(elem.DataProtectionStatus))
 		} else {
 			ko.Status.DataProtectionStatus = nil
 		}
@@ -110,13 +112,22 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.KMSKeyID = nil
 		}
+		if elem.LogGroupArn != nil {
+			if ko.Status.ACKResourceMetadata == nil {
+				ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+			}
+			tmpARN := ackv1alpha1.AWSResourceName(*elem.LogGroupArn)
+			ko.Status.ACKResourceMetadata.ARN = &tmpARN
+		}
 		if elem.MetricFilterCount != nil {
-			ko.Status.MetricFilterCount = elem.MetricFilterCount
+			metricFilterCountCopy := int64(*elem.MetricFilterCount)
+			ko.Status.MetricFilterCount = &metricFilterCountCopy
 		} else {
 			ko.Status.MetricFilterCount = nil
 		}
 		if elem.RetentionInDays != nil {
-			ko.Status.RetentionInDays = elem.RetentionInDays
+			retentionInDaysCopy := int64(*elem.RetentionInDays)
+			ko.Status.RetentionInDays = &retentionInDaysCopy
 		} else {
 			ko.Status.RetentionInDays = nil
 		}
@@ -161,7 +172,7 @@ func (rm *resourceManager) newListRequestPayload(
 	res := &svcsdk.DescribeLogGroupsInput{}
 
 	if r.ko.Spec.Name != nil {
-		res.SetLogGroupNamePrefix(*r.ko.Spec.Name)
+		res.LogGroupNamePrefix = r.ko.Spec.Name
 	}
 
 	return res, nil
@@ -186,7 +197,7 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.CreateLogGroupOutput
 	_ = resp
-	resp, err = rm.sdkapi.CreateLogGroupWithContext(ctx, input)
+	resp, err = rm.sdkapi.CreateLogGroup(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "CreateLogGroup", err)
 	if err != nil {
 		return nil, err
@@ -228,19 +239,13 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.CreateLogGroupInput{}
 
 	if r.ko.Spec.KMSKeyID != nil {
-		res.SetKmsKeyId(*r.ko.Spec.KMSKeyID)
+		res.KmsKeyId = r.ko.Spec.KMSKeyID
 	}
 	if r.ko.Spec.Name != nil {
-		res.SetLogGroupName(*r.ko.Spec.Name)
+		res.LogGroupName = r.ko.Spec.Name
 	}
 	if r.ko.Spec.Tags != nil {
-		f2 := map[string]*string{}
-		for f2key, f2valiter := range r.ko.Spec.Tags {
-			var f2val string
-			f2val = *f2valiter
-			f2[f2key] = &f2val
-		}
-		res.SetTags(f2)
+		res.Tags = aws.ToStringMap(r.ko.Spec.Tags)
 	}
 
 	return res, nil
@@ -273,7 +278,7 @@ func (rm *resourceManager) sdkDelete(
 	}
 	var resp *svcsdk.DeleteLogGroupOutput
 	_ = resp
-	resp, err = rm.sdkapi.DeleteLogGroupWithContext(ctx, input)
+	resp, err = rm.sdkapi.DeleteLogGroup(ctx, input)
 	rm.metrics.RecordAPICall("DELETE", "DeleteLogGroup", err)
 	return nil, err
 }
@@ -286,7 +291,7 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.DeleteLogGroupInput{}
 
 	if r.ko.Spec.Name != nil {
-		res.SetLogGroupName(*r.ko.Spec.Name)
+		res.LogGroupName = r.ko.Spec.Name
 	}
 
 	return res, nil
@@ -394,11 +399,12 @@ func (rm *resourceManager) terminalAWSError(err error) bool {
 	if err == nil {
 		return false
 	}
-	awsErr, ok := ackerr.AWSError(err)
-	if !ok {
+
+	var terminalErr smithy.APIError
+	if !errors.As(err, &terminalErr) {
 		return false
 	}
-	switch awsErr.Code() {
+	switch terminalErr.ErrorCode() {
 	case "InvalidParameterException":
 		return true
 	default:

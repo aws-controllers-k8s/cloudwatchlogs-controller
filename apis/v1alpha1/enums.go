@@ -15,20 +15,62 @@
 
 package v1alpha1
 
+type AnomalyDetectorStatus string
+
+const (
+	AnomalyDetectorStatus_ANALYZING    AnomalyDetectorStatus = "ANALYZING"
+	AnomalyDetectorStatus_DELETED      AnomalyDetectorStatus = "DELETED"
+	AnomalyDetectorStatus_FAILED       AnomalyDetectorStatus = "FAILED"
+	AnomalyDetectorStatus_INITIALIZING AnomalyDetectorStatus = "INITIALIZING"
+	AnomalyDetectorStatus_PAUSED       AnomalyDetectorStatus = "PAUSED"
+	AnomalyDetectorStatus_TRAINING     AnomalyDetectorStatus = "TRAINING"
+)
+
 type DataProtectionStatus string
 
 const (
 	DataProtectionStatus_ACTIVATED DataProtectionStatus = "ACTIVATED"
-	DataProtectionStatus_DELETED   DataProtectionStatus = "DELETED"
 	DataProtectionStatus_ARCHIVED  DataProtectionStatus = "ARCHIVED"
+	DataProtectionStatus_DELETED   DataProtectionStatus = "DELETED"
 	DataProtectionStatus_DISABLED  DataProtectionStatus = "DISABLED"
+)
+
+type DeliveryDestinationType string
+
+const (
+	DeliveryDestinationType_CWL DeliveryDestinationType = "CWL"
+	DeliveryDestinationType_FH  DeliveryDestinationType = "FH"
+	DeliveryDestinationType_S3  DeliveryDestinationType = "S3"
 )
 
 type Distribution string
 
 const (
-	Distribution_Random      Distribution = "Random"
 	Distribution_ByLogStream Distribution = "ByLogStream"
+	Distribution_Random      Distribution = "Random"
+)
+
+type EntityRejectionErrorType string
+
+const (
+	EntityRejectionErrorType_EntitySizeTooLarge      EntityRejectionErrorType = "EntitySizeTooLarge"
+	EntityRejectionErrorType_InvalidAttributes       EntityRejectionErrorType = "InvalidAttributes"
+	EntityRejectionErrorType_InvalidEntity           EntityRejectionErrorType = "InvalidEntity"
+	EntityRejectionErrorType_InvalidKeyAttributes    EntityRejectionErrorType = "InvalidKeyAttributes"
+	EntityRejectionErrorType_InvalidTypeValue        EntityRejectionErrorType = "InvalidTypeValue"
+	EntityRejectionErrorType_MissingRequiredFields   EntityRejectionErrorType = "MissingRequiredFields"
+	EntityRejectionErrorType_UnsupportedLogGroupType EntityRejectionErrorType = "UnsupportedLogGroupType"
+)
+
+type EvaluationFrequency string
+
+const (
+	EvaluationFrequency_FIFTEEN_MIN EvaluationFrequency = "FIFTEEN_MIN"
+	EvaluationFrequency_FIVE_MIN    EvaluationFrequency = "FIVE_MIN"
+	EvaluationFrequency_ONE_HOUR    EvaluationFrequency = "ONE_HOUR"
+	EvaluationFrequency_ONE_MIN     EvaluationFrequency = "ONE_MIN"
+	EvaluationFrequency_TEN_MIN     EvaluationFrequency = "TEN_MIN"
+	EvaluationFrequency_THIRTY_MIN  EvaluationFrequency = "THIRTY_MIN"
 )
 
 type ExportTaskStatusCode string
@@ -42,53 +84,174 @@ const (
 	ExportTaskStatusCode_RUNNING        ExportTaskStatusCode = "RUNNING"
 )
 
+type FlattenedElement string
+
+const (
+	FlattenedElement_first FlattenedElement = "first"
+	FlattenedElement_last  FlattenedElement = "last"
+)
+
+type IndexSource string
+
+const (
+	IndexSource_ACCOUNT   IndexSource = "ACCOUNT"
+	IndexSource_LOG_GROUP IndexSource = "LOG_GROUP"
+)
+
+type InheritedProperty string
+
+const (
+	InheritedProperty_ACCOUNT_DATA_PROTECTION InheritedProperty = "ACCOUNT_DATA_PROTECTION"
+)
+
+type IntegrationStatus string
+
+const (
+	IntegrationStatus_ACTIVE       IntegrationStatus = "ACTIVE"
+	IntegrationStatus_FAILED       IntegrationStatus = "FAILED"
+	IntegrationStatus_PROVISIONING IntegrationStatus = "PROVISIONING"
+)
+
+type IntegrationType string
+
+const (
+	IntegrationType_OPENSEARCH IntegrationType = "OPENSEARCH"
+)
+
+type LogGroupClass string
+
+const (
+	LogGroupClass_INFREQUENT_ACCESS LogGroupClass = "INFREQUENT_ACCESS"
+	LogGroupClass_STANDARD          LogGroupClass = "STANDARD"
+)
+
+type OpenSearchResourceStatusType string
+
+const (
+	OpenSearchResourceStatusType_ACTIVE    OpenSearchResourceStatusType = "ACTIVE"
+	OpenSearchResourceStatusType_ERROR     OpenSearchResourceStatusType = "ERROR"
+	OpenSearchResourceStatusType_NOT_FOUND OpenSearchResourceStatusType = "NOT_FOUND"
+)
+
 type OrderBy string
 
 const (
-	OrderBy_LogStreamName OrderBy = "LogStreamName"
 	OrderBy_LastEventTime OrderBy = "LastEventTime"
+	OrderBy_LogStreamName OrderBy = "LogStreamName"
+)
+
+type OutputFormat string
+
+const (
+	OutputFormat_json    OutputFormat = "json"
+	OutputFormat_parquet OutputFormat = "parquet"
+	OutputFormat_plain   OutputFormat = "plain"
+	OutputFormat_raw     OutputFormat = "raw"
+	OutputFormat_w3c     OutputFormat = "w3c"
+)
+
+type PolicyType string
+
+const (
+	PolicyType_DATA_PROTECTION_POLICY     PolicyType = "DATA_PROTECTION_POLICY"
+	PolicyType_FIELD_INDEX_POLICY         PolicyType = "FIELD_INDEX_POLICY"
+	PolicyType_SUBSCRIPTION_FILTER_POLICY PolicyType = "SUBSCRIPTION_FILTER_POLICY"
+	PolicyType_TRANSFORMER_POLICY         PolicyType = "TRANSFORMER_POLICY"
+)
+
+type QueryLanguage string
+
+const (
+	QueryLanguage_CWLI QueryLanguage = "CWLI"
+	QueryLanguage_PPL  QueryLanguage = "PPL"
+	QueryLanguage_SQL  QueryLanguage = "SQL"
 )
 
 type QueryStatus string
 
 const (
-	QueryStatus_Scheduled QueryStatus = "Scheduled"
-	QueryStatus_Running   QueryStatus = "Running"
+	QueryStatus_Cancelled QueryStatus = "Cancelled"
 	QueryStatus_Complete  QueryStatus = "Complete"
 	QueryStatus_Failed    QueryStatus = "Failed"
-	QueryStatus_Cancelled QueryStatus = "Cancelled"
+	QueryStatus_Running   QueryStatus = "Running"
+	QueryStatus_Scheduled QueryStatus = "Scheduled"
 	QueryStatus_Timeout   QueryStatus = "Timeout"
 	QueryStatus_Unknown   QueryStatus = "Unknown"
+)
+
+type Scope string
+
+const (
+	Scope_ALL Scope = "ALL"
 )
 
 type StandardUnit string
 
 const (
-	StandardUnit_Seconds          StandardUnit = "Seconds"
+	StandardUnit_Bits             StandardUnit = "Bits"
+	StandardUnit_Bits_Second      StandardUnit = "Bits/Second"
+	StandardUnit_Bytes            StandardUnit = "Bytes"
+	StandardUnit_Bytes_Second     StandardUnit = "Bytes/Second"
+	StandardUnit_Count            StandardUnit = "Count"
+	StandardUnit_Count_Second     StandardUnit = "Count/Second"
+	StandardUnit_Gigabits         StandardUnit = "Gigabits"
+	StandardUnit_Gigabits_Second  StandardUnit = "Gigabits/Second"
+	StandardUnit_Gigabytes        StandardUnit = "Gigabytes"
+	StandardUnit_Gigabytes_Second StandardUnit = "Gigabytes/Second"
+	StandardUnit_Kilobits         StandardUnit = "Kilobits"
+	StandardUnit_Kilobits_Second  StandardUnit = "Kilobits/Second"
+	StandardUnit_Kilobytes        StandardUnit = "Kilobytes"
+	StandardUnit_Kilobytes_Second StandardUnit = "Kilobytes/Second"
+	StandardUnit_Megabits         StandardUnit = "Megabits"
+	StandardUnit_Megabits_Second  StandardUnit = "Megabits/Second"
+	StandardUnit_Megabytes        StandardUnit = "Megabytes"
+	StandardUnit_Megabytes_Second StandardUnit = "Megabytes/Second"
 	StandardUnit_Microseconds     StandardUnit = "Microseconds"
 	StandardUnit_Milliseconds     StandardUnit = "Milliseconds"
-	StandardUnit_Bytes            StandardUnit = "Bytes"
-	StandardUnit_Kilobytes        StandardUnit = "Kilobytes"
-	StandardUnit_Megabytes        StandardUnit = "Megabytes"
-	StandardUnit_Gigabytes        StandardUnit = "Gigabytes"
-	StandardUnit_Terabytes        StandardUnit = "Terabytes"
-	StandardUnit_Bits             StandardUnit = "Bits"
-	StandardUnit_Kilobits         StandardUnit = "Kilobits"
-	StandardUnit_Megabits         StandardUnit = "Megabits"
-	StandardUnit_Gigabits         StandardUnit = "Gigabits"
-	StandardUnit_Terabits         StandardUnit = "Terabits"
-	StandardUnit_Percent          StandardUnit = "Percent"
-	StandardUnit_Count            StandardUnit = "Count"
-	StandardUnit_Bytes_Second     StandardUnit = "Bytes/Second"
-	StandardUnit_Kilobytes_Second StandardUnit = "Kilobytes/Second"
-	StandardUnit_Megabytes_Second StandardUnit = "Megabytes/Second"
-	StandardUnit_Gigabytes_Second StandardUnit = "Gigabytes/Second"
-	StandardUnit_Terabytes_Second StandardUnit = "Terabytes/Second"
-	StandardUnit_Bits_Second      StandardUnit = "Bits/Second"
-	StandardUnit_Kilobits_Second  StandardUnit = "Kilobits/Second"
-	StandardUnit_Megabits_Second  StandardUnit = "Megabits/Second"
-	StandardUnit_Gigabits_Second  StandardUnit = "Gigabits/Second"
-	StandardUnit_Terabits_Second  StandardUnit = "Terabits/Second"
-	StandardUnit_Count_Second     StandardUnit = "Count/Second"
 	StandardUnit_None             StandardUnit = "None"
+	StandardUnit_Percent          StandardUnit = "Percent"
+	StandardUnit_Seconds          StandardUnit = "Seconds"
+	StandardUnit_Terabits         StandardUnit = "Terabits"
+	StandardUnit_Terabits_Second  StandardUnit = "Terabits/Second"
+	StandardUnit_Terabytes        StandardUnit = "Terabytes"
+	StandardUnit_Terabytes_Second StandardUnit = "Terabytes/Second"
+)
+
+type State string
+
+const (
+	State_Active     State = "Active"
+	State_Baseline   State = "Baseline"
+	State_Suppressed State = "Suppressed"
+)
+
+type SuppressionState string
+
+const (
+	SuppressionState_SUPPRESSED   SuppressionState = "SUPPRESSED"
+	SuppressionState_UNSUPPRESSED SuppressionState = "UNSUPPRESSED"
+)
+
+type SuppressionType string
+
+const (
+	SuppressionType_INFINITE SuppressionType = "INFINITE"
+	SuppressionType_LIMITED  SuppressionType = "LIMITED"
+)
+
+type SuppressionUnit string
+
+const (
+	SuppressionUnit_HOURS   SuppressionUnit = "HOURS"
+	SuppressionUnit_MINUTES SuppressionUnit = "MINUTES"
+	SuppressionUnit_SECONDS SuppressionUnit = "SECONDS"
+)
+
+type Type string
+
+const (
+	Type_boolean Type = "boolean"
+	Type_double  Type = "double"
+	Type_integer Type = "integer"
+	Type_string  Type = "string"
 )
