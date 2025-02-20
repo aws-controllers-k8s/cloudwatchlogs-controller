@@ -27,17 +27,11 @@ type LogGroupSpec struct {
 
 	// The Amazon Resource Name (ARN) of the KMS key to use when encrypting log
 	// data. For more information, see Amazon Resource Names (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-kms).
-
-	KMSKeyID *string `json:"kmsKeyID,omitempty"`
-
+	KMSKeyID  *string                                  `json:"kmsKeyID,omitempty"`
 	KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
-
 	// +kubebuilder:validation:Required
-
-	Name *string `json:"name"`
-
-	RetentionDays *int64 `json:"retentionDays,omitempty"`
-
+	Name                *string                       `json:"name"`
+	RetentionDays       *int64                        `json:"retentionDays,omitempty"`
 	SubscriptionFilters []*PutSubscriptionFilterInput `json:"subscriptionFilters,omitempty"`
 	// The key-value pairs to use for the tags.
 	//
@@ -49,7 +43,6 @@ type LogGroupSpec struct {
 	// (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html). For more
 	// information about using tags to control access, see Controlling access to
 	// Amazon Web Services resources using tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html).
-
 	Tags map[string]*string `json:"tags,omitempty"`
 }
 
