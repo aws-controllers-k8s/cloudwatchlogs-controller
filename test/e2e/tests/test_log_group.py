@@ -17,7 +17,7 @@
 import time
 
 import pytest
-
+from acktest import tags
 from acktest.k8s import resource as k8s
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
@@ -87,12 +87,18 @@ class TestLogGroup:
         cr = k8s.get_resource(ref)
         assert 'creationTime' in cr['status']
         assert cr['status']['creationTime'] > 0
+        assert 'ackResourceMetadata' in cr['status']
+        assert 'arn' in cr['status']['ackResourceMetadata']
+        arn = cr['status']['ackResourceMetadata']['arn']
 
         # update retention period
         updated_retention = 3
         updates = {
             "spec": {
-                "retentionDays": updated_retention
+                "retentionDays": updated_retention,
+                "tags": {
+                    "newKey": "newVal"
+                }
             }
         }
 
@@ -100,6 +106,19 @@ class TestLogGroup:
         time.sleep(UPDATE_WAIT_AFTER_SECONDS)
 
         assert log_group.exists_with_retention_period(log_group_name, updated_retention)
+        cr = k8s.get_resource(ref)
+
+        latest_tags = log_group.get_tags(arn)
+        desired_tags = cr['spec']['tags']
+        tags.assert_ack_system_tags(
+            tags=latest_tags,
+        )
+        tags.assert_equal_without_ack_tags(
+            expected=desired_tags,
+            actual=latest_tags,
+        )
+
+        
 
     @pytest.mark.resource_data({'resource_file': 'invalid/log_group_invalid_parameter'})
     def test_terminal_condition_invalid_parameter(self, _log_group):
