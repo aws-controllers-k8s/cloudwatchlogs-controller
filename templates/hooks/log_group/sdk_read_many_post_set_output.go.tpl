@@ -5,3 +5,7 @@
 	if err != nil {
 		return nil, err
 	}
+	ko.Spec.Tags, err = getTags(ctx, rm.sdkapi, rm.metrics, string(*ko.Status.ACKResourceMetadata.ARN))
+	if err != nil {
+		return nil, err
+	}
