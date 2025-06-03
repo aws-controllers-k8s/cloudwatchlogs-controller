@@ -103,8 +103,8 @@ def get_tags(log_group_arn):
     c = boto3.client('logs')
     try:
         resp = c.list_tags_for_resource(
-            ResourceName=log_group_arn,
+            resourceArn=log_group_arn,
         )
-        return resp['TagList']
-    except c.exceptions.LogGroupNotFoundFault:
+        return resp['tags']
+    except c.exceptions.ResourceNotFoundException:
         return None
