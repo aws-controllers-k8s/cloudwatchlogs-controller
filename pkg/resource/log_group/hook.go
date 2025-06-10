@@ -22,8 +22,8 @@ import (
 	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/aws/aws-sdk-go/aws"
 
-	"github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/sync"
 	svcapitypes "github.com/aws-controllers-k8s/cloudwatchlogs-controller/apis/v1alpha1"
+	"github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/sync"
 )
 
 func (rm *resourceManager) updateRetentionPeriod(

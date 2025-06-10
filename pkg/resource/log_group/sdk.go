@@ -155,6 +155,7 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
+
 	return &resource{ko}, nil
 }
 
