@@ -13,7 +13,8 @@
                 "logs:TagResource",
                 "logs:CreateLogGroup",
                 "logs:ListTagsForResource"
-            ]
+            ],
+            "Resource": "*"
         }
     ]
 }
