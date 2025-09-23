@@ -79,7 +79,7 @@ class TestLogGroup:
         (ref, cr) = _log_group
         log_group_name = ref.name
 
-        condition.assert_synced(ref)
+        condition.assert_ready(ref)
 
         retention = cr['spec']['retentionDays']
         assert log_group.exists_with_retention_period(log_group_name, retention)
@@ -135,7 +135,7 @@ class TestLogGroup:
         (ref, cr) = _log_group
         log_group_name = ref.name
 
-        condition.assert_synced(ref)
+        condition.assert_ready(ref)
 
         retention = cr['spec']['retentionDays']
         assert log_group.exists_with_retention_period(log_group_name, retention)
