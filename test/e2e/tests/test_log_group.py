@@ -123,12 +123,7 @@ class TestLogGroup:
     @pytest.mark.resource_data({'resource_file': 'invalid/log_group_invalid_parameter'})
     def test_terminal_condition_invalid_parameter(self, _log_group):
         (ref, cr) = _log_group
-
-        expected_msg = "InvalidParameterException: "
-        terminal_condition = k8s.get_resource_condition(ref, "ACK.Terminal")
-        # Example condition message:
-        # InvalidParameterException: Invalid retention value. Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
-        assert expected_msg in terminal_condition['message']
+        condition.assert_terminal(ref, "InvalidParameterException: ")
 
     @pytest.mark.resource_data({'resource_file': 'log_group'})
     def test_subscription_group(self, _log_group):
