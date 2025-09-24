@@ -22,7 +22,6 @@ from acktest.k8s import resource as k8s, condition
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
-from e2e import condition
 from e2e import log_group
 
 RESOURCE_PLURAL = 'loggroups'
