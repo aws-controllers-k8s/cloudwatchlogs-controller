@@ -18,7 +18,7 @@ import time
 
 import pytest
 from acktest import tags
-from acktest.k8s import resource as k8s
+from acktest.k8s import resource as k8s, condition
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
