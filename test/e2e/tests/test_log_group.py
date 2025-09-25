@@ -18,11 +18,10 @@ import time
 
 import pytest
 from acktest import tags
-from acktest.k8s import resource as k8s
+from acktest.k8s import resource as k8s, condition
 from acktest.resources import random_suffix_name
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
-from e2e import condition
 from e2e import log_group
 
 RESOURCE_PLURAL = 'loggroups'
@@ -79,7 +78,7 @@ class TestLogGroup:
         (ref, cr) = _log_group
         log_group_name = ref.name
 
-        condition.assert_synced(ref)
+        condition.assert_ready(ref)
 
         retention = cr['spec']['retentionDays']
         assert log_group.exists_with_retention_period(log_group_name, retention)
@@ -123,19 +122,14 @@ class TestLogGroup:
     @pytest.mark.resource_data({'resource_file': 'invalid/log_group_invalid_parameter'})
     def test_terminal_condition_invalid_parameter(self, _log_group):
         (ref, cr) = _log_group
-
-        expected_msg = "InvalidParameterException: "
-        terminal_condition = k8s.get_resource_condition(ref, "ACK.Terminal")
-        # Example condition message:
-        # InvalidParameterException: Invalid retention value. Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
-        assert expected_msg in terminal_condition['message']
+        condition.assert_terminal(ref, "InvalidParameterException: ")
 
     @pytest.mark.resource_data({'resource_file': 'log_group'})
     def test_subscription_group(self, _log_group):
         (ref, cr) = _log_group
         log_group_name = ref.name
 
-        condition.assert_synced(ref)
+        condition.assert_ready(ref)
 
         retention = cr['spec']['retentionDays']
         assert log_group.exists_with_retention_period(log_group_name, retention)
