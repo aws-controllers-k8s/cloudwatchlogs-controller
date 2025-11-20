@@ -12,7 +12,10 @@
                 "logs:UntagResource",
                 "logs:TagResource",
                 "logs:CreateLogGroup",
-                "logs:ListTagsForResource"
+                "logs:ListTagsForResource",
+                "logs:DescribeSubscriptionFilters",
+                "logs:DeleteRetentionPolicy",
+                "logs:PutRetentionPolicy"
             ],
             "Resource": "*"
         }
