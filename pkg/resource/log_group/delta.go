@@ -53,6 +53,13 @@ func newResourceDelta(
 	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef) {
 		delta.Add("Spec.KMSKeyRef", a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef)
 	}
+	if len(a.ko.Spec.MetricFilters) != len(b.ko.Spec.MetricFilters) {
+		delta.Add("Spec.MetricFilters", a.ko.Spec.MetricFilters, b.ko.Spec.MetricFilters)
+	} else if len(a.ko.Spec.MetricFilters) > 0 {
+		if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.MetricFilters, b.ko.Spec.MetricFilters) {
+			delta.Add("Spec.MetricFilters", a.ko.Spec.MetricFilters, b.ko.Spec.MetricFilters)
+		}
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.Name, b.ko.Spec.Name) {
 		delta.Add("Spec.Name", a.ko.Spec.Name, b.ko.Spec.Name)
 	} else if a.ko.Spec.Name != nil && b.ko.Spec.Name != nil {

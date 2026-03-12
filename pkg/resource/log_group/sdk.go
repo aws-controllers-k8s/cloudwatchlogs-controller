@@ -151,6 +151,10 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
+	ko.Spec.MetricFilters, err = rm.getMetricFilters(ctx, r.ko.Spec.Name)
+	if err != nil {
+		return nil, err
+	}
 	ko.Spec.Tags, err = getTags(ctx, rm.sdkapi, rm.metrics, string(*ko.Status.ACKResourceMetadata.ARN))
 	if err != nil {
 		return nil, err
@@ -228,7 +232,7 @@ func (rm *resourceManager) sdkCreate(
 	//
 	// It's the first we see this issue. @a-hilaly to investigate and determine
 	// whether this is a bug everywhere or something specific to cloudwatch.
-	if len(desired.ko.Spec.SubscriptionFilters) > 0 {
+	if len(desired.ko.Spec.SubscriptionFilters) > 0 || len(desired.ko.Spec.MetricFilters) > 0 {
 		return &resource{ko}, &ackrequeue.RequeueNeeded{}
 	}
 

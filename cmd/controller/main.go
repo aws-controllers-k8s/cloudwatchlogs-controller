@@ -16,10 +16,9 @@
 package main
 
 import (
-	"context"
 	"os"
+	"context"
 
-	kmsapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	ackcfg "github.com/aws-controllers-k8s/runtime/pkg/config"
 	ackrt "github.com/aws-controllers-k8s/runtime/pkg/runtime"
@@ -27,8 +26,8 @@ import (
 	ackrtutil "github.com/aws-controllers-k8s/runtime/pkg/util"
 	ackrtwebhook "github.com/aws-controllers-k8s/runtime/pkg/webhook"
 	flag "github.com/spf13/pflag"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrlrt "sigs.k8s.io/controller-runtime"
 	ctrlrtcache "sigs.k8s.io/controller-runtime/pkg/cache"
@@ -36,25 +35,27 @@ import (
 	ctrlrtmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	ctrlrtwebhook "sigs.k8s.io/controller-runtime/pkg/webhook"
+	kmsapitypes "github.com/aws-controllers-k8s/kms-controller/apis/v1alpha1"
 
-	svctypes "github.com/aws-controllers-k8s/cloudwatchlogs-controller/apis/v1alpha1"
 	svcresource "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource"
+	svctypes "github.com/aws-controllers-k8s/cloudwatchlogs-controller/apis/v1alpha1"
 
+	
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/log_group"
-
+	
 	"github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/version"
 )
 
 var (
-	awsServiceAPIGroup = "cloudwatchlogs.services.k8s.aws"
-	awsServiceAlias    = "cloudwatchlogs"
-	scheme             = runtime.NewScheme()
-	setupLog           = ctrlrt.Log.WithName("setup")
+	awsServiceAPIGroup      = "cloudwatchlogs.services.k8s.aws"
+	awsServiceAlias	        = "cloudwatchlogs"
+	scheme			        = runtime.NewScheme()
+	setupLog		        = ctrlrt.Log.WithName("setup")
 )
 
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
-
+	
 	_ = svctypes.AddToScheme(scheme)
 	_ = ackv1alpha1.AddToScheme(scheme)
 	_ = kmsapitypes.AddToScheme(scheme)
@@ -99,7 +100,8 @@ func main() {
 		)
 		os.Exit(1)
 	}
-
+	
+	
 	for _, namespace := range namespaces {
 		watchNamespaces[namespace] = ctrlrtcache.Config{}
 	}

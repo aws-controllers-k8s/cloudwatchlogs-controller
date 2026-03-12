@@ -13,6 +13,7 @@ ignore:
     - PutSubscriptionFilterInput.LogGroupName
     - CreateLogGroupInput.LogGroupClass
     - PutSubscriptionFilterInput.ApplyOnTransformedLogs
+    - PutMetricFilterInput.LogGroupName
 resources:
   LogGroup:
     exceptions:
@@ -30,6 +31,9 @@ resources:
       SubscriptionFilters:
         custom_field:
           list_of: PutSubscriptionFilterInput
+      MetricFilters:
+        custom_field:
+          list_of: PutMetricFilterInput
       RetentionDays:
         from:
           operation: PutRetentionPolicy

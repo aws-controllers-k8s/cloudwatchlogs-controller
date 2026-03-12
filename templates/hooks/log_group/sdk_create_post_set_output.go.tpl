@@ -14,6 +14,6 @@
 	//
 	// It's the first we see this issue. @a-hilaly to investigate and determine
 	// whether this is a bug everywhere or something specific to cloudwatch.
-	if len(desired.ko.Spec.SubscriptionFilters) > 0 {
+	if len(desired.ko.Spec.SubscriptionFilters) > 0 || len(desired.ko.Spec.MetricFilters) > 0 {
 		return &resource{ko}, &ackrequeue.RequeueNeeded{}
 	}

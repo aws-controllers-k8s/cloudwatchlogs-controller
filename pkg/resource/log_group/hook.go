@@ -174,6 +174,11 @@ func (rm *resourceManager) customUpdateLogGroup(
 			return &resource{ko}, err
 		}
 	}
+	if delta.DifferentAt("Spec.MetricFilters") {
+		if err := rm.updateMetricFilters(ctx, desired, latest); err != nil {
+			return &resource{ko}, err
+		}
+	}
 
 	if desired.ko.Spec.RetentionDays != nil {
 		ko.Status.RetentionInDays = desired.ko.Spec.RetentionDays
@@ -319,4 +324,249 @@ func equalStrings(a, b *string) bool {
 	}
 
 	return (*a == "" && b == nil) || *a == *b
+}
+
+func (rm *resourceManager) updateMetricFilters(
+	ctx context.Context,
+	desired, latest *resource,
+) (err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.updateMetricFilters")
+	defer func(err error) {
+		exit(err)
+	}(err)
+
+	toAdd, toRemove := compareMetricFilters(desired.ko.Spec.MetricFilters, latest.ko.Spec.MetricFilters)
+	for _, metricFilter := range toRemove {
+		_, err = rm.removeMetricFilter(ctx, desired, metricFilter.FilterName)
+		if err != nil {
+			return err
+		}
+	}
+	for _, metricFilter := range toAdd {
+		_, err = rm.addMetricFilter(ctx, desired, metricFilter)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// addMetricFilter calls the AWS API to add a metric filter.
+func (rm *resourceManager) addMetricFilter(
+	ctx context.Context,
+	desired *resource,
+	metricFilter *svcapitypes.PutMetricFilterInput,
+) (output *svcsdk.PutMetricFilterOutput, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.addMetricFilter")
+	defer func(err error) { exit(err) }(err)
+
+	input := &svcsdk.PutMetricFilterInput{
+		LogGroupName:  desired.ko.Spec.Name,
+		FilterName:    metricFilter.FilterName,
+		FilterPattern: metricFilter.FilterPattern,
+	}
+	if metricFilter.MetricTransformations != nil {
+		transformations := make([]svcsdktypes.MetricTransformation, 0, len(metricFilter.MetricTransformations))
+		for _, mt := range metricFilter.MetricTransformations {
+			t := svcsdktypes.MetricTransformation{}
+			if mt.MetricName != nil {
+				t.MetricName = mt.MetricName
+			}
+			if mt.MetricNamespace != nil {
+				t.MetricNamespace = mt.MetricNamespace
+			}
+			if mt.MetricValue != nil {
+				t.MetricValue = mt.MetricValue
+			}
+			if mt.DefaultValue != nil {
+				t.DefaultValue = mt.DefaultValue
+			}
+			if mt.Unit != nil {
+				t.Unit = svcsdktypes.StandardUnit(*mt.Unit)
+			}
+			if mt.Dimensions != nil {
+				dims := make(map[string]string, len(mt.Dimensions))
+				for k, v := range mt.Dimensions {
+					if v != nil {
+						dims[k] = *v
+					}
+				}
+				t.Dimensions = dims
+			}
+			transformations = append(transformations, t)
+		}
+		input.MetricTransformations = transformations
+	}
+
+	output, err = rm.sdkapi.PutMetricFilter(ctx, input)
+	rm.metrics.RecordAPICall("UPDATE", "PutMetricFilter", err)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+// removeMetricFilter calls the AWS API to delete a metric filter.
+func (rm *resourceManager) removeMetricFilter(
+	ctx context.Context,
+	desired *resource,
+	filterName *string,
+) (output *svcsdk.DeleteMetricFilterOutput, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.removeMetricFilter")
+	defer func(err error) { exit(err) }(err)
+
+	input := &svcsdk.DeleteMetricFilterInput{
+		FilterName:   filterName,
+		LogGroupName: desired.ko.Spec.Name,
+	}
+
+	output, err = rm.sdkapi.DeleteMetricFilter(ctx, input)
+	rm.metrics.RecordAPICall("UPDATE", "DeleteMetricFilter", err)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+func (rm *resourceManager) getMetricFilters(ctx context.Context, name *string) ([]*svcapitypes.PutMetricFilterInput, error) {
+	var err error
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.getMetricFilters")
+	defer func(err error) { exit(err) }(err)
+
+	metricFilters := make([]*svcapitypes.PutMetricFilterInput, 0)
+	input := &svcsdk.DescribeMetricFiltersInput{
+		LogGroupName: name,
+	}
+
+	for {
+		var resp *svcsdk.DescribeMetricFiltersOutput
+		resp, err = rm.sdkapi.DescribeMetricFilters(ctx, input)
+		rm.metrics.RecordAPICall("READ_MANY", "DescribeMetricFilters", err)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, mf := range resp.MetricFilters {
+			pmfi := &svcapitypes.PutMetricFilterInput{
+				FilterName:    mf.FilterName,
+				FilterPattern: mf.FilterPattern,
+			}
+			if mf.MetricTransformations != nil {
+				transformations := make([]*svcapitypes.MetricTransformation, 0, len(mf.MetricTransformations))
+				for _, mt := range mf.MetricTransformations {
+					t := &svcapitypes.MetricTransformation{
+						MetricName:      mt.MetricName,
+						MetricNamespace: mt.MetricNamespace,
+						MetricValue:     mt.MetricValue,
+						DefaultValue:    mt.DefaultValue,
+					}
+					if mt.Unit != "" {
+						unit := string(mt.Unit)
+						t.Unit = &unit
+					}
+					if mt.Dimensions != nil {
+						dims := make(map[string]*string, len(mt.Dimensions))
+						for k, v := range mt.Dimensions {
+							vCopy := v
+							dims[k] = &vCopy
+						}
+						t.Dimensions = dims
+					}
+					transformations = append(transformations, t)
+				}
+				pmfi.MetricTransformations = transformations
+			}
+			metricFilters = append(metricFilters, pmfi)
+		}
+		if resp.NextToken == nil {
+			break
+		}
+		input.NextToken = resp.NextToken
+	}
+
+	return metricFilters, nil
+}
+
+func compareMetricFilters(
+	desired, observed []*svcapitypes.PutMetricFilterInput,
+) (toAdd, toRemove []*svcapitypes.PutMetricFilterInput) {
+	for _, d := range desired {
+		found := false
+		for _, o := range observed {
+			if *d.FilterName == *o.FilterName {
+				if !equalMetricFilters(*d, *o) {
+					break
+				}
+				found = true
+				break
+			}
+		}
+		if !found {
+			toAdd = append(toAdd, d)
+		}
+	}
+	for _, o := range observed {
+		found := false
+		for _, d := range desired {
+			if *o.FilterName == *d.FilterName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			toRemove = append(toRemove, o)
+		}
+	}
+	return
+}
+
+func equalMetricFilters(a, b svcapitypes.PutMetricFilterInput) bool {
+	if !equalStrings(a.FilterName, b.FilterName) {
+		return false
+	}
+	if !equalStrings(a.FilterPattern, b.FilterPattern) {
+		return false
+	}
+	if len(a.MetricTransformations) != len(b.MetricTransformations) {
+		return false
+	}
+	for i := range a.MetricTransformations {
+		if !equalMetricTransformations(a.MetricTransformations[i], b.MetricTransformations[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalMetricTransformations(a, b *svcapitypes.MetricTransformation) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	if !equalStrings(a.MetricName, b.MetricName) {
+		return false
+	}
+	if !equalStrings(a.MetricNamespace, b.MetricNamespace) {
+		return false
+	}
+	if !equalStrings(a.MetricValue, b.MetricValue) {
+		return false
+	}
+	if !equalStrings(a.Unit, b.Unit) {
+		return false
+	}
+	// Compare DefaultValue
+	if (a.DefaultValue == nil) != (b.DefaultValue == nil) {
+		return false
+	}
+	if a.DefaultValue != nil && *a.DefaultValue != *b.DefaultValue {
+		return false
+	}
+	return true
 }

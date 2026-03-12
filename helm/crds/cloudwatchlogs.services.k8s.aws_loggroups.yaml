@@ -64,6 +64,52 @@ spec:
                         type: string
                     type: object
                 type: object
+              metricFilters:
+                items:
+                  properties:
+                    applyOnTransformedLogs:
+                      type: boolean
+                    filterName:
+                      type: string
+                    filterPattern:
+                      description: |-
+                        A symbolic description of how CloudWatch Logs should interpret the data in
+                        each log event. For example, a log event can contain timestamps, IP addresses,
+                        strings, and so on. You use the filter pattern to specify what to look for
+                        in the log event message.
+                      type: string
+                    metricTransformations:
+                      items:
+                        description: |-
+                          Indicates how to transform ingested log events to metric data in a CloudWatch
+                          metric.
+                        properties:
+                          defaultValue:
+                            type: number
+                          dimensions:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          metricName:
+                            description: |-
+                              The name of the CloudWatch metric to which the monitored log information
+                              should be published. For example, you might publish to a metric named ErrorCount.
+                            type: string
+                          metricNamespace:
+                            type: string
+                          metricValue:
+                            description: |-
+                              The value to publish to the CloudWatch metric. For example, if you're counting
+                              the occurrences of a term like Error, the value is 1 for each occurrence.
+                              If you're counting the bytes transferred, the value is the value in the log
+                              event.
+                            type: string
+                          unit:
+                            type: string
+                        type: object
+                      type: array
+                  type: object
+                type: array
               name:
                 type: string
               retentionDays:
