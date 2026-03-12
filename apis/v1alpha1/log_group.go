@@ -25,25 +25,26 @@ import (
 // Represents a log group.
 type LogGroupSpec struct {
 
-	// The Amazon Resource Name (ARN) of the KMS key to use when encrypting log
-	// data. For more information, see Amazon Resource Names (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-kms).
-	KMSKeyID  *string                                  `json:"kmsKeyID,omitempty"`
-	KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
-	// +kubebuilder:validation:Required
-	Name                *string                       `json:"name"`
-	RetentionDays       *int64                        `json:"retentionDays,omitempty"`
-	SubscriptionFilters []*PutSubscriptionFilterInput `json:"subscriptionFilters,omitempty"`
-	// The key-value pairs to use for the tags.
-	//
-	// You can grant users access to certain log groups while preventing them from
-	// accessing other log groups. To do so, tag your groups and use IAM policies
-	// that refer to those tags. To assign tags when you create a log group, you
-	// must have either the logs:TagResource or logs:TagLogGroup permission. For
-	// more information about tagging, see Tagging Amazon Web Services resources
-	// (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html). For more
-	// information about using tags to control access, see Controlling access to
-	// Amazon Web Services resources using tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html).
-	Tags map[string]*string `json:"tags,omitempty"`
+// The Amazon Resource Name (ARN) of the KMS key to use when encrypting log
+// data. For more information, see Amazon Resource Names (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-kms).
+KMSKeyID *string `json:"kmsKeyID,omitempty"`
+KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
+MetricFilters []*PutMetricFilterInput `json:"metricFilters,omitempty"`
+// +kubebuilder:validation:Required
+Name *string `json:"name"`
+RetentionDays *int64 `json:"retentionDays,omitempty"`
+SubscriptionFilters []*PutSubscriptionFilterInput `json:"subscriptionFilters,omitempty"`
+// The key-value pairs to use for the tags.
+// 
+// You can grant users access to certain log groups while preventing them from
+// accessing other log groups. To do so, tag your groups and use IAM policies
+// that refer to those tags. To assign tags when you create a log group, you
+// must have either the logs:TagResource or logs:TagLogGroup permission. For
+// more information about tagging, see Tagging Amazon Web Services resources
+// (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html). For more
+// information about using tags to control access, see Controlling access to
+// Amazon Web Services resources using tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html).
+Tags map[string]*string `json:"tags,omitempty"`
 }
 
 // LogGroupStatus defines the observed state of LogGroup
@@ -60,11 +61,11 @@ type LogGroupStatus struct {
 	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
 	// The creation time of the log group, expressed as the number of milliseconds
-	// after Jan 1, 1970 00:00:00 UTC.
+// after Jan 1, 1970 00:00:00 UTC.
 	// +kubebuilder:validation:Optional
 	CreationTime *int64 `json:"creationTime,omitempty"`
 	// Displays whether this log group has a protection policy, or whether it had
-	// one in the past. For more information, see PutDataProtectionPolicy (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDataProtectionPolicy.html).
+// one in the past. For more information, see PutDataProtectionPolicy (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDataProtectionPolicy.html).
 	// +kubebuilder:validation:Optional
 	DataProtectionStatus *string `json:"dataProtectionStatus,omitempty"`
 	// The number of metric filters.
@@ -83,8 +84,8 @@ type LogGroupStatus struct {
 type LogGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              LogGroupSpec   `json:"spec,omitempty"`
-	Status            LogGroupStatus `json:"status,omitempty"`
+	Spec   LogGroupSpec   `json:"spec,omitempty"`
+	Status LogGroupStatus `json:"status,omitempty"`
 }
 
 // LogGroupList contains a list of LogGroup
@@ -92,7 +93,7 @@ type LogGroup struct {
 type LogGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []LogGroup `json:"items"`
+	Items []LogGroup `json:"items"`
 }
 
 func init() {
