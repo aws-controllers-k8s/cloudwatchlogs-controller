@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.19.0
-  name: loggroups.cloudwatchlogs.services.k8s.aws
+  name: scheduledqueries.cloudwatchlogs.services.k8s.aws
 spec:
   group: cloudwatchlogs.services.k8s.aws
   names:
-    kind: LogGroup
-    listKind: LogGroupList
-    plural: loggroups
-    singular: loggroup
+    kind: ScheduledQuery
+    listKind: ScheduledQueryList
+    plural: scheduledqueries
+    singular: scheduledquery
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: LogGroup is the Schema for the LogGroups API
+        description: ScheduledQuery is the Schema for the ScheduledQueries API
         properties:
           apiVersion:
             description: |-
@@ -37,94 +37,115 @@ spec:
           metadata:
             type: object
           spec:
-            description: |-
-              LogGroupSpec defines the desired state of LogGroup.
-
-              Represents a log group.
+            description: ScheduledQuerySpec defines the desired state of ScheduledQuery.
             properties:
-              deletionProtectionEnabled:
+              description:
                 description: |-
-                  Use this parameter to enable deletion protection for the new log group. When
-                  enabled on a log group, deletion protection blocks all deletion operations
-                  until it is explicitly disabled. By default log groups are created without
-                  deletion protection enabled.
-                type: boolean
-              kmsKeyID:
-                description: |-
-                  The Amazon Resource Name (ARN) of the KMS key to use when encrypting log
-                  data. For more information, see Amazon Resource Names (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-kms).
+                  An optional description for the scheduled query to help identify its purpose
+                  and functionality.
                 type: string
-              kmsKeyRef:
-                description: "AWSResourceReferenceWrapper provides a wrapper around
-                  *AWSResourceReference\ntype to provide more user friendly syntax
-                  for references using 'from' field\nEx:\nAPIIDRef:\n\n\tfrom:\n\t
-                  \ name: my-api"
+              destinationConfiguration:
+                description: |-
+                  Configuration for where to deliver query results. Currently supports Amazon
+                  S3 destinations for storing query output.
                 properties:
-                  from:
+                  s3Configuration:
                     description: |-
-                      AWSResourceReference provides all the values necessary to reference another
-                      k8s resource for finding the identifier(Id/ARN/Name)
+                      Configuration for Amazon S3 destination where scheduled query results are
+                      delivered.
                     properties:
-                      name:
+                      destinationIdentifier:
                         type: string
-                      namespace:
+                      kmsKeyID:
+                        type: string
+                      ownerAccountID:
+                        type: string
+                      roleARN:
                         type: string
                     type: object
                 type: object
-              name:
+              executionRoleARN:
+                description: |-
+                  The ARN of the IAM role that grants permissions to execute the query and
+                  deliver results to the specified destination. The role must have permissions
+                  to read from the specified log groups and write to the destination.
                 type: string
-              retentionDays:
+              logGroupIdentifiers:
+                description: |-
+                  An array of log group names or ARNs to query. You can specify between 1 and
+                  50 log groups. Log groups can be identified by name or full ARN.
+                items:
+                  type: string
+                type: array
+              name:
+                description: |-
+                  The name of the scheduled query. The name must be unique within your account
+                  and region. Valid characters are alphanumeric characters, hyphens, underscores,
+                  and periods. Length must be between 1 and 255 characters.
+
+                  Regex Pattern: `^[a-zA-Z0-9_\-/.#]+$`
+                type: string
+              queryLanguage:
+                description: |-
+                  The query language to use for the scheduled query. Valid values are CWLI,
+                  PPL, and SQL.
+                type: string
+              queryString:
+                description: |-
+                  The query string to execute. This is the same query syntax used in CloudWatch
+                  Logs Insights. Maximum length is 10,000 characters.
+                type: string
+              scheduleEndTime:
+                description: |-
+                  The end time for the scheduled query in Unix epoch format. The query will
+                  stop executing after this time.
                 format: int64
                 type: integer
-              subscriptionFilters:
-                items:
-                  properties:
-                    destinationARN:
-                      type: string
-                    distribution:
-                      description: |-
-                        The method used to distribute log data to the destination, which can be either
-                        random or grouped by log stream.
-                      type: string
-                    emitSystemFields:
-                      items:
-                        type: string
-                      type: array
-                    fieldSelectionCriteria:
-                      type: string
-                    filterName:
-                      type: string
-                    filterPattern:
-                      description: |-
-                        A symbolic description of how CloudWatch Logs should interpret the data in
-                        each log event. For example, a log event can contain timestamps, IP addresses,
-                        strings, and so on. You use the filter pattern to specify what to look for
-                        in the log event message.
-                      type: string
-                    roleARN:
-                      type: string
-                  type: object
-                type: array
+              scheduleExpression:
+                description: |-
+                  A cron expression that defines when the scheduled query runs. The expression
+                  uses standard cron syntax and supports minute-level precision. Maximum length
+                  is 256 characters.
+                type: string
+              scheduleStartTime:
+                description: |-
+                  The start time for the scheduled query in Unix epoch format. The query will
+                  not execute before this time.
+                format: int64
+                type: integer
+              startTimeOffset:
+                description: |-
+                  The time offset in seconds that defines the lookback period for the query.
+                  This determines how far back in time the query searches from the execution
+                  time.
+                format: int64
+                type: integer
+              state:
+                description: |-
+                  The initial state of the scheduled query. Valid values are ENABLED and DISABLED.
+                  Default is ENABLED.
+                type: string
               tags:
                 additionalProperties:
                   type: string
                 description: |-
-                  The key-value pairs to use for the tags.
-
-                  You can grant users access to certain log groups while preventing them from
-                  accessing other log groups. To do so, tag your groups and use IAM policies
-                  that refer to those tags. To assign tags when you create a log group, you
-                  must have either the logs:TagResource or logs:TagLogGroup permission. For
-                  more information about tagging, see Tagging Amazon Web Services resources
-                  (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html). For more
-                  information about using tags to control access, see Controlling access to
-                  Amazon Web Services resources using tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html).
+                  Key-value pairs to associate with the scheduled query for resource management
+                  and cost allocation.
                 type: object
+              timezone:
+                description: |-
+                  The timezone for evaluating the schedule expression. This determines when
+                  the scheduled query executes relative to the specified timezone.
+                type: string
             required:
+            - executionRoleARN
             - name
+            - queryLanguage
+            - queryString
+            - scheduleExpression
             type: object
           status:
-            description: LogGroupStatus defines the observed state of LogGroup
+            description: ScheduledQueryStatus defines the observed state of ScheduledQuery
             properties:
               ackResourceMetadata:
                 description: |-
@@ -194,28 +215,6 @@ spec:
                   - type
                   type: object
                 type: array
-              creationTime:
-                description: |-
-                  The creation time of the log group, expressed as the number of milliseconds
-                  after Jan 1, 1970 00:00:00 UTC.
-                format: int64
-                type: integer
-              dataProtectionStatus:
-                description: |-
-                  Displays whether this log group has a protection policy, or whether it had
-                  one in the past. For more information, see PutDataProtectionPolicy (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutDataProtectionPolicy.html).
-                type: string
-              metricFilterCount:
-                description: The number of metric filters.
-                format: int64
-                type: integer
-              retentionInDays:
-                format: int64
-                type: integer
-              storedBytes:
-                description: The number of bytes stored.
-                format: int64
-                type: integer
             type: object
         type: object
     served: true

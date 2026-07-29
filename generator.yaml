@@ -6,6 +6,8 @@ ignore:
   resource_names:
     - Delivery
     - ExportTask
+    - ImportTask
+    - ScheduledQuery
     #- LogGroup
     - LogStream
     - LogAnomalyDetector
@@ -13,6 +15,11 @@ ignore:
     - PutSubscriptionFilterInput.LogGroupName
     - CreateLogGroupInput.LogGroupClass
     - PutSubscriptionFilterInput.ApplyOnTransformedLogs
+operations:
+  PutResourcePolicy:
+    resource_name: ResourcePolicy
+    operation_type: Create
+    output_wrapper_field_path: ResourcePolicy
 resources:
   LogGroup:
     exceptions:
@@ -79,3 +86,29 @@ resources:
         template_path: hooks/log_group/sdk_read_many_post_set_output.go.tpl
     update_operation:
       custom_method_name: customUpdateLogGroup
+  ResourcePolicy:
+    exceptions:
+      terminal_codes:
+        - InvalidParameterException
+        - LimitExceededException
+    fields:
+      PolicyName:
+        is_primary_key: true
+        is_immutable: true
+      PolicyDocument:
+        is_iam_policy: true
+      ResourceArn:
+        is_immutable: true
+      LastUpdatedTime:
+        is_read_only: true
+      PolicyScope:
+        is_read_only: true
+      RevisionId:
+        is_read_only: true
+    list_operation:
+      match_fields:
+        - PolicyName
+    tags:
+      ignore: true
+    update_operation:
+      custom_method_name: customUpdateResourcePolicy

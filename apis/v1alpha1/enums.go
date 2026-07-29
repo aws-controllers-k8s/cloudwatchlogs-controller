@@ -15,6 +15,15 @@
 
 package v1alpha1
 
+type ActionStatus string
+
+const (
+	ActionStatus_CLIENT_ERROR ActionStatus = "CLIENT_ERROR"
+	ActionStatus_COMPLETE     ActionStatus = "COMPLETE"
+	ActionStatus_FAILED       ActionStatus = "FAILED"
+	ActionStatus_IN_PROGRESS  ActionStatus = "IN_PROGRESS"
+)
+
 type AnomalyDetectorStatus string
 
 const (
@@ -38,9 +47,10 @@ const (
 type DeliveryDestinationType string
 
 const (
-	DeliveryDestinationType_CWL DeliveryDestinationType = "CWL"
-	DeliveryDestinationType_FH  DeliveryDestinationType = "FH"
-	DeliveryDestinationType_S3  DeliveryDestinationType = "S3"
+	DeliveryDestinationType_CWL  DeliveryDestinationType = "CWL"
+	DeliveryDestinationType_FH   DeliveryDestinationType = "FH"
+	DeliveryDestinationType_S3   DeliveryDestinationType = "S3"
+	DeliveryDestinationType_XRAY DeliveryDestinationType = "XRAY"
 )
 
 type Distribution string
@@ -73,6 +83,26 @@ const (
 	EvaluationFrequency_THIRTY_MIN  EvaluationFrequency = "THIRTY_MIN"
 )
 
+type EventSource string
+
+const (
+	EventSource_AWSWAF          EventSource = "AWSWAF"
+	EventSource_CloudTrail      EventSource = "CloudTrail"
+	EventSource_EKSAudit        EventSource = "EKSAudit"
+	EventSource_Route53Resolver EventSource = "Route53Resolver"
+	EventSource_VPCFlow         EventSource = "VPCFlow"
+)
+
+type ExecutionStatus string
+
+const (
+	ExecutionStatus_Complete     ExecutionStatus = "Complete"
+	ExecutionStatus_Failed       ExecutionStatus = "Failed"
+	ExecutionStatus_InvalidQuery ExecutionStatus = "InvalidQuery"
+	ExecutionStatus_Running      ExecutionStatus = "Running"
+	ExecutionStatus_Timeout      ExecutionStatus = "Timeout"
+)
+
 type ExportTaskStatusCode string
 
 const (
@@ -91,11 +121,27 @@ const (
 	FlattenedElement_last  FlattenedElement = "last"
 )
 
+type ImportStatus string
+
+const (
+	ImportStatus_CANCELLED   ImportStatus = "CANCELLED"
+	ImportStatus_COMPLETED   ImportStatus = "COMPLETED"
+	ImportStatus_FAILED      ImportStatus = "FAILED"
+	ImportStatus_IN_PROGRESS ImportStatus = "IN_PROGRESS"
+)
+
 type IndexSource string
 
 const (
 	IndexSource_ACCOUNT   IndexSource = "ACCOUNT"
 	IndexSource_LOG_GROUP IndexSource = "LOG_GROUP"
+)
+
+type IndexType string
+
+const (
+	IndexType_FACET       IndexType = "FACET"
+	IndexType_FIELD_INDEX IndexType = "FIELD_INDEX"
 )
 
 type InheritedProperty string
@@ -118,11 +164,26 @@ const (
 	IntegrationType_OPENSEARCH IntegrationType = "OPENSEARCH"
 )
 
+type ListAggregateLogGroupSummariesGroupBy string
+
+const (
+	ListAggregateLogGroupSummariesGroupBy_DATA_SOURCE_NAME_AND_TYPE        ListAggregateLogGroupSummariesGroupBy = "DATA_SOURCE_NAME_AND_TYPE"
+	ListAggregateLogGroupSummariesGroupBy_DATA_SOURCE_NAME_TYPE_AND_FORMAT ListAggregateLogGroupSummariesGroupBy = "DATA_SOURCE_NAME_TYPE_AND_FORMAT"
+)
+
 type LogGroupClass string
 
 const (
+	LogGroupClass_DELIVERY          LogGroupClass = "DELIVERY"
 	LogGroupClass_INFREQUENT_ACCESS LogGroupClass = "INFREQUENT_ACCESS"
 	LogGroupClass_STANDARD          LogGroupClass = "STANDARD"
+)
+
+type OCSFVersion string
+
+const (
+	OCSFVersion_V1_1 OCSFVersion = "V1.1"
+	OCSFVersion_V1_5 OCSFVersion = "V1.5"
 )
 
 type OpenSearchResourceStatusType string
@@ -150,11 +211,19 @@ const (
 	OutputFormat_w3c     OutputFormat = "w3c"
 )
 
+type PolicyScope string
+
+const (
+	PolicyScope_ACCOUNT  PolicyScope = "ACCOUNT"
+	PolicyScope_RESOURCE PolicyScope = "RESOURCE"
+)
+
 type PolicyType string
 
 const (
 	PolicyType_DATA_PROTECTION_POLICY     PolicyType = "DATA_PROTECTION_POLICY"
 	PolicyType_FIELD_INDEX_POLICY         PolicyType = "FIELD_INDEX_POLICY"
+	PolicyType_METRIC_EXTRACTION_POLICY   PolicyType = "METRIC_EXTRACTION_POLICY"
 	PolicyType_SUBSCRIPTION_FILTER_POLICY PolicyType = "SUBSCRIPTION_FILTER_POLICY"
 	PolicyType_TRANSFORMER_POLICY         PolicyType = "TRANSFORMER_POLICY"
 )
@@ -177,6 +246,28 @@ const (
 	QueryStatus_Scheduled QueryStatus = "Scheduled"
 	QueryStatus_Timeout   QueryStatus = "Timeout"
 	QueryStatus_Unknown   QueryStatus = "Unknown"
+)
+
+type S3TableIntegrationSourceStatus string
+
+const (
+	S3TableIntegrationSourceStatus_ACTIVE                         S3TableIntegrationSourceStatus = "ACTIVE"
+	S3TableIntegrationSourceStatus_DATA_SOURCE_DELETE_IN_PROGRESS S3TableIntegrationSourceStatus = "DATA_SOURCE_DELETE_IN_PROGRESS"
+	S3TableIntegrationSourceStatus_FAILED                         S3TableIntegrationSourceStatus = "FAILED"
+	S3TableIntegrationSourceStatus_UNHEALTHY                      S3TableIntegrationSourceStatus = "UNHEALTHY"
+)
+
+type ScheduledQueryDestinationType string
+
+const (
+	ScheduledQueryDestinationType_S3 ScheduledQueryDestinationType = "S3"
+)
+
+type ScheduledQueryState string
+
+const (
+	ScheduledQueryState_DISABLED ScheduledQueryState = "DISABLED"
+	ScheduledQueryState_ENABLED  ScheduledQueryState = "ENABLED"
 )
 
 type Scope string
