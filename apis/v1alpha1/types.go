@@ -291,6 +291,8 @@ type PutSubscriptionFilterInput struct {
 	// in the log event message.
 	FilterPattern *string `json:"filterPattern,omitempty"`
 	RoleARN       *string `json:"roleARN,omitempty"`
+	// Reference field for RoleARN
+	RoleRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"roleRef,omitempty"`
 }
 
 // This structure contains details about a saved CloudWatch Logs Insights query

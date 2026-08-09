@@ -211,6 +211,18 @@ func customPreCompare(
 	if b.ko.Spec.RetentionDays == nil {
 		b.ko.Spec.RetentionDays = &retention
 	}
+
+	// SubscriptionFilters is compared here rather than structurally, because the
+	// desired list items carry the RoleRef companion generated for RoleARN while
+	// the observed items built by getSubscriptionFilters from
+	// DescribeSubscriptionFilters cannot: the AWS response has no notion of a
+	// Kubernetes reference. A DeepEqual over the whole list would therefore
+	// differ on every reconcile. compareSubscriptionFilters looks at the
+	// concrete fields only, which is the comparison the update path acts on.
+	toAdd, toRemove := compareSubscriptionFilters(a.ko.Spec.SubscriptionFilters, b.ko.Spec.SubscriptionFilters)
+	if len(toAdd) > 0 || len(toRemove) > 0 {
+		delta.Add("Spec.SubscriptionFilters", a.ko.Spec.SubscriptionFilters, b.ko.Spec.SubscriptionFilters)
+	}
 }
 
 func compareSubscriptionFilters(

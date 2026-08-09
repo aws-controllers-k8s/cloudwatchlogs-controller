@@ -3,6 +3,7 @@ module github.com/aws-controllers-k8s/cloudwatchlogs-controller
 go 1.25.0
 
 require (
+	github.com/aws-controllers-k8s/iam-controller v1.8.0
 	github.com/aws-controllers-k8s/kms-controller v1.0.4
 	github.com/aws-controllers-k8s/runtime v0.62.0
 	github.com/aws/aws-sdk-go v1.49.0

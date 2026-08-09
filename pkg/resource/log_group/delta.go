@@ -67,13 +67,6 @@ func newResourceDelta(
 			delta.Add("Spec.RetentionDays", a.ko.Spec.RetentionDays, b.ko.Spec.RetentionDays)
 		}
 	}
-	if len(a.ko.Spec.SubscriptionFilters) != len(b.ko.Spec.SubscriptionFilters) {
-		delta.Add("Spec.SubscriptionFilters", a.ko.Spec.SubscriptionFilters, b.ko.Spec.SubscriptionFilters)
-	} else if len(a.ko.Spec.SubscriptionFilters) > 0 {
-		if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.SubscriptionFilters, b.ko.Spec.SubscriptionFilters) {
-			delta.Add("Spec.SubscriptionFilters", a.ko.Spec.SubscriptionFilters, b.ko.Spec.SubscriptionFilters)
-		}
-	}
 	desiredACKTags, _ := convertToOrderedACKTags(a.ko.Spec.Tags)
 	latestACKTags, _ := convertToOrderedACKTags(b.ko.Spec.Tags)
 	if !ackcompare.MapStringStringEqual(desiredACKTags, latestACKTags) {

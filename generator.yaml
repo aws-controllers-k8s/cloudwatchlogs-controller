@@ -30,6 +30,18 @@ resources:
       SubscriptionFilters:
         custom_field:
           list_of: PutSubscriptionFilterInput
+        # Compared in the delta_pre_compare hook (customPreCompare) instead of
+        # structurally: the desired list items carry the generated RoleRef
+        # companion, which the observed list built by getSubscriptionFilters
+        # cannot populate, so a DeepEqual over the whole list would differ on
+        # every reconcile.
+        compare:
+          is_ignored: true
+      SubscriptionFilters.RoleARN:
+        references:
+          resource: Role
+          service_name: iam
+          path: Status.ACKResourceMetadata.ARN
       RetentionDays:
         from:
           operation: PutRetentionPolicy
