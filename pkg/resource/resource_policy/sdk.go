@@ -254,8 +254,89 @@ func (rm *resourceManager) sdkUpdate(
 	desired *resource,
 	latest *resource,
 	delta *ackcompare.Delta,
-) (*resource, error) {
-	return rm.customUpdateResourcePolicy(ctx, desired, latest, delta)
+) (updated *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkUpdate")
+	defer func() {
+		exit(err)
+	}()
+	input, err := rm.newUpdateRequestPayload(ctx, desired, delta)
+	if err != nil {
+		return nil, err
+	}
+	// ExpectedRevisionId guards against concurrent modification and is only
+	// valid for resource-scoped policies (those with a ResourceArn). Account
+	// scoped policies do not carry a revision ID, so leave the field unset.
+	if desired.ko.Spec.ResourceARN != nil && latest.ko.Status.RevisionID != nil {
+		input.ExpectedRevisionId = latest.ko.Status.RevisionID
+	}
+
+	var resp *svcsdk.PutResourcePolicyOutput
+	_ = resp
+	resp, err = rm.sdkapi.PutResourcePolicy(ctx, input)
+	rm.metrics.RecordAPICall("UPDATE", "PutResourcePolicy", err)
+	if err != nil {
+		return nil, err
+	}
+	// Merge in the information we read from the API call above to the copy of
+	// the original Kubernetes object we passed to the function
+	ko := desired.ko.DeepCopy()
+
+	if resp.ResourcePolicy.LastUpdatedTime != nil {
+		ko.Status.LastUpdatedTime = resp.ResourcePolicy.LastUpdatedTime
+	} else {
+		ko.Status.LastUpdatedTime = nil
+	}
+	if resp.ResourcePolicy.PolicyDocument != nil {
+		ko.Spec.PolicyDocument = resp.ResourcePolicy.PolicyDocument
+	} else {
+		ko.Spec.PolicyDocument = nil
+	}
+	if resp.ResourcePolicy.PolicyName != nil {
+		ko.Spec.PolicyName = resp.ResourcePolicy.PolicyName
+	} else {
+		ko.Spec.PolicyName = nil
+	}
+	if resp.ResourcePolicy.PolicyScope != "" {
+		ko.Status.PolicyScope = aws.String(string(resp.ResourcePolicy.PolicyScope))
+	} else {
+		ko.Status.PolicyScope = nil
+	}
+	if resp.ResourcePolicy.ResourceArn != nil {
+		ko.Spec.ResourceARN = resp.ResourcePolicy.ResourceArn
+	} else {
+		ko.Spec.ResourceARN = nil
+	}
+	if resp.ResourcePolicy.RevisionId != nil {
+		ko.Status.RevisionID = resp.ResourcePolicy.RevisionId
+	} else {
+		ko.Status.RevisionID = nil
+	}
+
+	rm.setStatusDefaults(ko)
+	return &resource{ko}, nil
+}
+
+// newUpdateRequestPayload returns an SDK-specific struct for the HTTP request
+// payload of the Update API call for the resource
+func (rm *resourceManager) newUpdateRequestPayload(
+	ctx context.Context,
+	r *resource,
+	delta *ackcompare.Delta,
+) (*svcsdk.PutResourcePolicyInput, error) {
+	res := &svcsdk.PutResourcePolicyInput{}
+
+	if r.ko.Spec.PolicyDocument != nil {
+		res.PolicyDocument = r.ko.Spec.PolicyDocument
+	}
+	if r.ko.Spec.PolicyName != nil {
+		res.PolicyName = r.ko.Spec.PolicyName
+	}
+	if r.ko.Spec.ResourceARN != nil {
+		res.ResourceArn = r.ko.Spec.ResourceARN
+	}
+
+	return res, nil
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API

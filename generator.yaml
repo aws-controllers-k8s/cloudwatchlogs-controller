@@ -30,7 +30,14 @@ operations:
     operation_type: List
   PutResourcePolicy:
     resource_name: ResourcePolicy
-    operation_type: Create
+    # PutResourcePolicy is an idempotent upsert, so it serves as both the
+    # Create and Update operation. Mapping it to Update lets the generator emit
+    # a standard sdkUpdate; the ExpectedRevisionId injection needed for
+    # resource-scoped policies is handled by the sdk_update_post_build_request
+    # hook rather than a full custom update method.
+    operation_type:
+      - Create
+      - Update
     output_wrapper_field_path: ResourcePolicy
 resources:
   LogGroup:
@@ -122,5 +129,6 @@ resources:
         - PolicyName
     tags:
       ignore: true
-    update_operation:
-      custom_method_name: customUpdateResourcePolicy
+    hooks:
+      sdk_update_post_build_request:
+        template_path: hooks/resource_policy/sdk_update_post_build_request.go.tpl
