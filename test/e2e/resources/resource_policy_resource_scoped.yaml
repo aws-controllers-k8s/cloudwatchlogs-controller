@@ -3,7 +3,8 @@ kind: ResourcePolicy
 metadata:
   name: $POLICY_NAME
 spec:
-  policyName: $POLICY_NAME
+  # Resource-scoped policies are keyed by resourceARN only; policyName must not
+  # be set (the API rejects a request that carries both).
   resourceARN: $RESOURCE_ARN
   policyDocument: |
     {

@@ -14,6 +14,7 @@
 """Integration tests for the CloudWatch Logs ResourcePolicy resource"""
 
 import json
+import time
 import pytest
 from acktest.k8s import resource as k8s
 from acktest.resources import random_suffix_name
@@ -137,7 +138,7 @@ def _resource_scoped_policy(dependent_log_group):
         _, _ = k8s.delete_custom_resource(ref, 3, 10)
     except Exception:
         pass
-    resource_policy.wait_until_deleted_resource_scoped(log_group_arn, policy_name)
+    resource_policy.wait_until_deleted_resource_scoped(log_group_arn)
 
 
 @service_marker
@@ -167,9 +168,12 @@ class TestResourcePolicy:
             }
         }
         k8s.patch_custom_resource(ref, updates)
-        k8s.wait_resource_consumed_by_controller(ref, wait_periods=5)
-
-        condition.assert_synced(ref)
+        # Let the controller pick up the new generation and reset conditions,
+        # then wait for it to finish re-syncing before reading back from AWS.
+        time.sleep(UPDATE_WAIT_AFTER_SECONDS)
+        assert k8s.wait_on_condition(
+            ref, condition.CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=5,
+        )
 
         # Verify updated document in AWS
         aws_policy = resource_policy.get(policy_name)
@@ -182,15 +186,14 @@ class TestResourcePolicy:
 
     def test_crud_resource_scoped(self, _resource_scoped_policy):
         (ref, cr, log_group_arn) = _resource_scoped_policy
-        policy_name = ref.name
 
         # Verify resource is synced
         condition.assert_synced(ref)
 
-        # Verify the resource-scoped policy exists in AWS
-        aws_policy = resource_policy.get_resource_scoped(log_group_arn, policy_name)
+        # Verify the resource-scoped policy exists in AWS. Resource-scoped
+        # policies are keyed by their resource ARN, not a policy name.
+        aws_policy = resource_policy.get_resource_scoped(log_group_arn)
         assert aws_policy is not None
-        assert aws_policy["policyName"] == policy_name
         assert aws_policy["policyScope"] == "RESOURCE"
         assert aws_policy["resourceArn"] == log_group_arn
 
@@ -219,12 +222,15 @@ class TestResourcePolicy:
             }
         }
         k8s.patch_custom_resource(ref, updates)
-        k8s.wait_resource_consumed_by_controller(ref, wait_periods=5)
-
-        condition.assert_synced(ref)
+        # Let the controller pick up the new generation and reset conditions,
+        # then wait for it to finish re-syncing before reading back from AWS.
+        time.sleep(UPDATE_WAIT_AFTER_SECONDS)
+        assert k8s.wait_on_condition(
+            ref, condition.CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=5,
+        )
 
         # Verify the updated document is persisted in AWS
-        aws_policy = resource_policy.get_resource_scoped(log_group_arn, policy_name)
+        aws_policy = resource_policy.get_resource_scoped(log_group_arn)
         assert aws_policy is not None
         aws_doc = json.loads(aws_policy["policyDocument"])
         expected_doc = json.loads(updated_policy_document)

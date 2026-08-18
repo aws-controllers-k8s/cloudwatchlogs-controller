@@ -38,13 +38,14 @@ def get(policy_name: str):
     return None
 
 
-def get_resource_scoped(resource_arn: str, policy_name: str):
+def get_resource_scoped(resource_arn: str):
     """Returns the resource-scoped CloudWatch Logs resource policy attached to
-    the supplied resource ARN with the given name, or None.
+    the supplied resource ARN, or None.
 
-    DescribeResourcePolicies defaults to ACCOUNT scope, so resource-scoped
-    policies are only returned when the RESOURCE scope and the resource ARN are
-    supplied explicitly.
+    Resource-scoped policies are keyed by their resource ARN (one per resource)
+    rather than a policy name. DescribeResourcePolicies defaults to ACCOUNT
+    scope, so they are only returned when the RESOURCE scope and the resource
+    ARN are supplied explicitly.
     """
     cwl = boto3.client("logs")
     try:
@@ -53,7 +54,7 @@ def get_resource_scoped(resource_arn: str, policy_name: str):
             policyScope="RESOURCE",
         )
         for policy in resp.get("resourcePolicies", []):
-            if policy.get("policyName") == policy_name:
+            if policy.get("resourceArn") == resource_arn:
                 return policy
     except Exception:
         return None
@@ -89,13 +90,11 @@ def wait_until_deleted(
 
 def wait_until_deleted_resource_scoped(
     resource_arn: str,
-    policy_name: str,
     timeout_seconds: int = DEFAULT_WAIT_UNTIL_DELETED_TIMEOUT_SECONDS,
     interval_seconds: int = DEFAULT_WAIT_UNTIL_DELETED_INTERVAL_SECONDS,
 ) -> None:
     """Waits until the resource-scoped ResourcePolicy attached to the supplied
-    resource ARN with the given name is no longer returned from the CloudWatch
-    Logs API.
+    resource ARN is no longer returned from the CloudWatch Logs API.
 
     Raises:
         pytest.fail upon timeout
@@ -111,6 +110,6 @@ def wait_until_deleted_resource_scoped(
             )
         time.sleep(interval_seconds)
 
-        latest = get_resource_scoped(resource_arn, policy_name)
+        latest = get_resource_scoped(resource_arn)
         if latest is None:
             break

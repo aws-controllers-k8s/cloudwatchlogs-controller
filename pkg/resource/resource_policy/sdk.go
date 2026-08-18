@@ -74,6 +74,13 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
+	// A ResourceArn identifies a resource-scoped policy, which must be queried
+	// with the RESOURCE policy scope. DescribeResourcePolicies defaults to the
+	// ACCOUNT scope and rejects any request that pairs a ResourceArn with it.
+	if r.ko.Spec.ResourceARN != nil {
+		input.PolicyScope = svcsdktypes.PolicyScopeResource
+	}
+
 	var resp *svcsdk.DescribeResourcePoliciesOutput
 	resp, err = rm.sdkapi.DescribeResourcePolicies(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeResourcePolicies", err)
@@ -353,6 +360,13 @@ func (rm *resourceManager) sdkDelete(
 	if err != nil {
 		return nil, err
 	}
+	// ExpectedRevisionId is required when deleting a resource-scoped policy to
+	// guard against concurrent modification. Account-scoped policies do not
+	// carry a revision ID, so leave the field unset for them.
+	if r.ko.Spec.ResourceARN != nil && r.ko.Status.RevisionID != nil {
+		input.ExpectedRevisionId = r.ko.Status.RevisionID
+	}
+
 	var resp *svcsdk.DeleteResourcePolicyOutput
 	_ = resp
 	resp, err = rm.sdkapi.DeleteResourcePolicy(ctx, input)

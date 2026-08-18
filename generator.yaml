@@ -129,5 +129,9 @@ resources:
     tags:
       ignore: true
     hooks:
+      sdk_read_many_post_build_request:
+        template_path: hooks/resource_policy/sdk_read_many_post_build_request.go.tpl
       sdk_update_post_build_request:
         template_path: hooks/resource_policy/sdk_update_post_build_request.go.tpl
+      sdk_delete_post_build_request:
+        template_path: hooks/resource_policy/sdk_delete_post_build_request.go.tpl
