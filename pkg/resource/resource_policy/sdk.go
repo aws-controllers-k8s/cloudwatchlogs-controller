@@ -234,9 +234,6 @@ func (rm *resourceManager) newCreateRequestPayload(
 ) (*svcsdk.PutResourcePolicyInput, error) {
 	res := &svcsdk.PutResourcePolicyInput{}
 
-	if r.ko.Spec.ExpectedRevisionID != nil {
-		res.ExpectedRevisionId = r.ko.Spec.ExpectedRevisionID
-	}
 	if r.ko.Spec.PolicyDocument != nil {
 		res.PolicyDocument = r.ko.Spec.PolicyDocument
 	}
@@ -289,9 +286,6 @@ func (rm *resourceManager) newDeleteRequestPayload(
 ) (*svcsdk.DeleteResourcePolicyInput, error) {
 	res := &svcsdk.DeleteResourcePolicyInput{}
 
-	if r.ko.Spec.ExpectedRevisionID != nil {
-		res.ExpectedRevisionId = r.ko.Spec.ExpectedRevisionID
-	}
 	if r.ko.Spec.PolicyName != nil {
 		res.PolicyName = r.ko.Spec.PolicyName
 	}

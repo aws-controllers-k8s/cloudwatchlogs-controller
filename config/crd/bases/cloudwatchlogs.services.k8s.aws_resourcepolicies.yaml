@@ -43,12 +43,6 @@ spec:
               A policy enabling one or more entities to put logs to a log group in this
               account.
             properties:
-              expectedRevisionID:
-                description: |-
-                  The expected revision ID of the resource policy. Required when resourceArn
-                  is provided to prevent concurrent modifications. Use null when creating a
-                  resource policy for the first time.
-                type: string
               policyDocument:
                 description: |-
                   Details of the new policy, including the identity of the principal that is

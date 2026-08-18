@@ -41,13 +41,6 @@ func newResourceDelta(
 		return delta
 	}
 
-	if ackcompare.HasNilDifference(a.ko.Spec.ExpectedRevisionID, b.ko.Spec.ExpectedRevisionID) {
-		delta.Add("Spec.ExpectedRevisionID", a.ko.Spec.ExpectedRevisionID, b.ko.Spec.ExpectedRevisionID)
-	} else if a.ko.Spec.ExpectedRevisionID != nil && b.ko.Spec.ExpectedRevisionID != nil {
-		if *a.ko.Spec.ExpectedRevisionID != *b.ko.Spec.ExpectedRevisionID {
-			delta.Add("Spec.ExpectedRevisionID", a.ko.Spec.ExpectedRevisionID, b.ko.Spec.ExpectedRevisionID)
-		}
-	}
 	if ackcompare.HasNilDifference(a.ko.Spec.PolicyDocument, b.ko.Spec.PolicyDocument) {
 		delta.Add("Spec.PolicyDocument", a.ko.Spec.PolicyDocument, b.ko.Spec.PolicyDocument)
 	} else if a.ko.Spec.PolicyDocument != nil && b.ko.Spec.PolicyDocument != nil {

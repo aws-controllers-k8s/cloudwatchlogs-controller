@@ -13,6 +13,7 @@ ignore:
     - LogAnomalyDetector
   field_paths:
     - PutSubscriptionFilterInput.LogGroupName
+    - PutResourcePolicyInput.ExpectedRevisionId
     - CreateLogGroupInput.LogGroupClass
     - PutSubscriptionFilterInput.ApplyOnTransformedLogs
 operations:

@@ -26,10 +26,6 @@ import (
 // account.
 type ResourcePolicySpec struct {
 
-	// The expected revision ID of the resource policy. Required when resourceArn
-	// is provided to prevent concurrent modifications. Use null when creating a
-	// resource policy for the first time.
-	ExpectedRevisionID *string `json:"expectedRevisionID,omitempty"`
 	// Details of the new policy, including the identity of the principal that is
 	// enabled to put logs to this account. This is formatted as a JSON string.
 	// This parameter is required.
