@@ -488,8 +488,7 @@ func (rm *resourceManager) terminalAWSError(err error) bool {
 		return false
 	}
 	switch terminalErr.ErrorCode() {
-	case "InvalidParameterException",
-		"LimitExceededException":
+	case "InvalidParameterException":
 		return true
 	default:
 		return false

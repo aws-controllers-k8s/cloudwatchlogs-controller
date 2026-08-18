@@ -1,0 +1,18 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: ResourcePolicy
+metadata:
+  name: $POLICY_NAME
+spec:
+  policyName: $POLICY_NAME
+  resourceARN: $RESOURCE_ARN
+  policyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [{
+        "Sid": "Route53LogsToCloudWatchLogs",
+        "Effect": "Allow",
+        "Principal": {"Service": "route53.amazonaws.com"},
+        "Action": "logs:PutLogEvents",
+        "Resource": "$RESOURCE_ARN:*"
+      }]
+    }

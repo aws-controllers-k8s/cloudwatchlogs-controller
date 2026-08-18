@@ -38,6 +38,28 @@ def get(policy_name: str):
     return None
 
 
+def get_resource_scoped(resource_arn: str, policy_name: str):
+    """Returns the resource-scoped CloudWatch Logs resource policy attached to
+    the supplied resource ARN with the given name, or None.
+
+    DescribeResourcePolicies defaults to ACCOUNT scope, so resource-scoped
+    policies are only returned when the RESOURCE scope and the resource ARN are
+    supplied explicitly.
+    """
+    cwl = boto3.client("logs")
+    try:
+        resp = cwl.describe_resource_policies(
+            resourceArn=resource_arn,
+            policyScope="RESOURCE",
+        )
+        for policy in resp.get("resourcePolicies", []):
+            if policy.get("policyName") == policy_name:
+                return policy
+    except Exception:
+        return None
+    return None
+
+
 def wait_until_deleted(
     policy_name: str,
     timeout_seconds: int = DEFAULT_WAIT_UNTIL_DELETED_TIMEOUT_SECONDS,
@@ -61,5 +83,34 @@ def wait_until_deleted(
         time.sleep(interval_seconds)
 
         latest = get(policy_name)
+        if latest is None:
+            break
+
+
+def wait_until_deleted_resource_scoped(
+    resource_arn: str,
+    policy_name: str,
+    timeout_seconds: int = DEFAULT_WAIT_UNTIL_DELETED_TIMEOUT_SECONDS,
+    interval_seconds: int = DEFAULT_WAIT_UNTIL_DELETED_INTERVAL_SECONDS,
+) -> None:
+    """Waits until the resource-scoped ResourcePolicy attached to the supplied
+    resource ARN with the given name is no longer returned from the CloudWatch
+    Logs API.
+
+    Raises:
+        pytest.fail upon timeout
+    """
+    now = datetime.datetime.now()
+    timeout = now + datetime.timedelta(seconds=timeout_seconds)
+
+    while True:
+        if datetime.datetime.now() >= timeout:
+            pytest.fail(
+                "Timed out waiting for resource-scoped ResourcePolicy to be "
+                "deleted in CloudWatch Logs API"
+            )
+        time.sleep(interval_seconds)
+
+        latest = get_resource_scoped(resource_arn, policy_name)
         if latest is None:
             break

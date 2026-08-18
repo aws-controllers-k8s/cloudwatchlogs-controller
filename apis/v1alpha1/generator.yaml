@@ -109,7 +109,6 @@ resources:
     exceptions:
       terminal_codes:
         - InvalidParameterException
-        - LimitExceededException
     fields:
       PolicyName:
         is_primary_key: true
