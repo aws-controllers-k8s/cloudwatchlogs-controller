@@ -1,0 +1,16 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: ResourcePolicy
+metadata:
+  name: $POLICY_NAME
+spec:
+  policyName: $POLICY_NAME
+  policyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [{
+        "Effect": "Allow",
+        "Principal": {"Service": "route53.amazonaws.com"},
+        "Action": ["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],
+        "Resource": "*"
+      }]
+    }

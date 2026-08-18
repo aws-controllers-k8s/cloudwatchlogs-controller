@@ -90,6 +90,26 @@ rules:
   - patch
   - update
 - apiGroups:
+  - cloudwatchlogs.services.k8s.aws
+  resources:
+  - resourcepolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloudwatchlogs.services.k8s.aws
+  resources:
+  - resourcepolicies/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - kms.services.k8s.aws
   resources:
   - keys
