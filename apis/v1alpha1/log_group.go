@@ -25,11 +25,6 @@ import (
 // Represents a log group.
 type LogGroupSpec struct {
 
-	// Use this parameter to enable deletion protection for the new log group. When
-	// enabled on a log group, deletion protection blocks all deletion operations
-	// until it is explicitly disabled. By default log groups are created without
-	// deletion protection enabled.
-	DeletionProtectionEnabled *bool `json:"deletionProtectionEnabled,omitempty"`
 	// The Amazon Resource Name (ARN) of the KMS key to use when encrypting log
 	// data. For more information, see Amazon Resource Names (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-kms).
 	KMSKeyID  *string                                  `json:"kmsKeyID,omitempty"`

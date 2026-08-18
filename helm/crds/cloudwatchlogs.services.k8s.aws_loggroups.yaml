@@ -42,13 +42,6 @@ spec:
 
               Represents a log group.
             properties:
-              deletionProtectionEnabled:
-                description: |-
-                  Use this parameter to enable deletion protection for the new log group. When
-                  enabled on a log group, deletion protection blocks all deletion operations
-                  until it is explicitly disabled. By default log groups are created without
-                  deletion protection enabled.
-                type: boolean
               kmsKeyID:
                 description: |-
                   The Amazon Resource Name (ARN) of the KMS key to use when encrypting log
@@ -85,12 +78,6 @@ spec:
                       description: |-
                         The method used to distribute log data to the destination, which can be either
                         random or grouped by log stream.
-                      type: string
-                    emitSystemFields:
-                      items:
-                        type: string
-                      type: array
-                    fieldSelectionCriteria:
                       type: string
                     filterName:
                       type: string

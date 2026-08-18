@@ -16,7 +16,18 @@ ignore:
     - PutResourcePolicyInput.ExpectedRevisionId
     - CreateLogGroupInput.LogGroupClass
     - PutSubscriptionFilterInput.ApplyOnTransformedLogs
+    - CreateLogGroupInput.DeletionProtectionEnabled
+    - PutSubscriptionFilterInput.EmitSystemFields
+    - PutSubscriptionFilterInput.FieldSelectionCriteria
 operations:
+  # CloudWatch Logs exposes both DescribeLogGroups and ListLogGroups as
+  # candidate ReadMany (List) operations for LogGroup. The generator's
+  # heuristic picks ListLogGroups, but that API has no name-prefix filter and
+  # returns a slim LogGroupSummary, which breaks exact-name lookups and drops
+  # status fields. Pin the ReadMany operation to DescribeLogGroups explicitly.
+  DescribeLogGroups:
+    resource_name: LogGroup
+    operation_type: List
   PutResourcePolicy:
     resource_name: ResourcePolicy
     operation_type: Create

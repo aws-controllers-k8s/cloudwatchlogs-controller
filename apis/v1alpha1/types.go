@@ -43,21 +43,6 @@ type AnomalyDetector struct {
 	KMSKeyID      *string `json:"kmsKeyID,omitempty"`
 }
 
-// Represents a data source that categorizes logs by originating service and
-// log type, providing service-based organization complementing traditional
-// log groups.
-type DataSource struct {
-	Name *string `json:"name,omitempty"`
-	Type *string `json:"type_,omitempty"`
-}
-
-// Filter criteria for data sources, used to specify which data sources to include
-// in operations based on name and type.
-type DataSourceFilter struct {
-	Name *string `json:"name,omitempty"`
-	Type *string `json:"type_,omitempty"`
-}
-
 // This structure contains information about one delivery in your account.
 //
 // A delivery is a connection between a logical delivery source and a logical
@@ -170,10 +155,10 @@ type ExportTaskExecutionInfo struct {
 // This structure describes one log event field that is used as an index in
 // at least one index policy in this account.
 type FieldIndex struct {
-	FieldIndexName *string `json:"fieldIndexName,omitempty"`
-	FirstEventTime *int64  `json:"firstEventTime,omitempty"`
-	LastEventTime  *int64  `json:"lastEventTime,omitempty"`
-	LastScanTime   *int64  `json:"lastScanTime,omitempty"`
+	FirstEventTime     *int64  `json:"firstEventTime,omitempty"`
+	LastEventTime      *int64  `json:"lastEventTime,omitempty"`
+	LastScanTime       *int64  `json:"lastScanTime,omitempty"`
+	LogGroupIdentifier *string `json:"logGroupIdentifier,omitempty"`
 }
 
 // Represents a matched event.
@@ -204,9 +189,10 @@ type ImportStatistics struct {
 // This structure contains information about one field index policy in this
 // account.
 type IndexPolicy struct {
-	LastUpdateTime *int64  `json:"lastUpdateTime,omitempty"`
-	PolicyDocument *string `json:"policyDocument,omitempty"`
-	PolicyName     *string `json:"policyName,omitempty"`
+	LastUpdateTime     *int64  `json:"lastUpdateTime,omitempty"`
+	LogGroupIdentifier *string `json:"logGroupIdentifier,omitempty"`
+	PolicyDocument     *string `json:"policyDocument,omitempty"`
+	PolicyName         *string `json:"policyName,omitempty"`
 }
 
 // Represents a log event, which is a record of activity that was recorded by
@@ -218,8 +204,9 @@ type InputLogEvent struct {
 // This object contains the information for one log event returned in a Live
 // Tail stream.
 type LiveTailSessionLogEvent struct {
-	IngestionTime *int64 `json:"ingestionTime,omitempty"`
-	Timestamp     *int64 `json:"timestamp,omitempty"`
+	IngestionTime      *int64  `json:"ingestionTime,omitempty"`
+	LogGroupIdentifier *string `json:"logGroupIdentifier,omitempty"`
+	Timestamp          *int64  `json:"timestamp,omitempty"`
 }
 
 // This object contains information about this Live Tail session, including
@@ -247,15 +234,17 @@ type LogGroupSummary struct {
 
 // Represents a log group.
 type LogGroup_SDK struct {
-	ARN                       *string `json:"arn,omitempty"`
-	CreationTime              *int64  `json:"creationTime,omitempty"`
-	DataProtectionStatus      *string `json:"dataProtectionStatus,omitempty"`
-	DeletionProtectionEnabled *bool   `json:"deletionProtectionEnabled,omitempty"`
-	KMSKeyID                  *string `json:"kmsKeyID,omitempty"`
-	LogGroupARN               *string `json:"logGroupARN,omitempty"`
-	LogGroupClass             *string `json:"logGroupClass,omitempty"`
-	LogGroupName              *string `json:"logGroupName,omitempty"`
-	MetricFilterCount         *int64  `json:"metricFilterCount,omitempty"`
+	ARN                              *string   `json:"arn,omitempty"`
+	BearerTokenAuthenticationEnabled *bool     `json:"bearerTokenAuthenticationEnabled,omitempty"`
+	CreationTime                     *int64    `json:"creationTime,omitempty"`
+	DataProtectionStatus             *string   `json:"dataProtectionStatus,omitempty"`
+	DeletionProtectionEnabled        *bool     `json:"deletionProtectionEnabled,omitempty"`
+	InheritedProperties              []*string `json:"inheritedProperties,omitempty"`
+	KMSKeyID                         *string   `json:"kmsKeyID,omitempty"`
+	LogGroupARN                      *string   `json:"logGroupARN,omitempty"`
+	LogGroupClass                    *string   `json:"logGroupClass,omitempty"`
+	LogGroupName                     *string   `json:"logGroupName,omitempty"`
+	MetricFilterCount                *int64    `json:"metricFilterCount,omitempty"`
 	// The number of days to retain the log events in the specified log group. Possible
 	// values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731,
 	// 1096, 1827, 2192, 2557, 2922, 3288, and 3653.
@@ -281,10 +270,8 @@ type LogStream struct {
 // from ingested log events and transform them into metric data in a CloudWatch
 // metric.
 type MetricFilter struct {
-	CreationTime              *int64    `json:"creationTime,omitempty"`
-	EmitSystemFieldDimensions []*string `json:"emitSystemFieldDimensions,omitempty"`
-	FieldSelectionCriteria    *string   `json:"fieldSelectionCriteria,omitempty"`
-	FilterName                *string   `json:"filterName,omitempty"`
+	CreationTime *int64  `json:"creationTime,omitempty"`
+	FilterName   *string `json:"filterName,omitempty"`
 	// A symbolic description of how CloudWatch Logs should interpret the data in
 	// each log event. For example, a log event can contain timestamps, IP addresses,
 	// strings, and so on. You use the filter pattern to specify what to look for
@@ -328,10 +315,8 @@ type PutSubscriptionFilterInput struct {
 	DestinationARN *string `json:"destinationARN,omitempty"`
 	// The method used to distribute log data to the destination, which can be either
 	// random or grouped by log stream.
-	Distribution           *string   `json:"distribution,omitempty"`
-	EmitSystemFields       []*string `json:"emitSystemFields,omitempty"`
-	FieldSelectionCriteria *string   `json:"fieldSelectionCriteria,omitempty"`
-	FilterName             *string   `json:"filterName,omitempty"`
+	Distribution *string `json:"distribution,omitempty"`
+	FilterName   *string `json:"filterName,omitempty"`
 	// A symbolic description of how CloudWatch Logs should interpret the data in
 	// each log event. For example, a log event can contain timestamps, IP addresses,
 	// strings, and so on. You use the filter pattern to specify what to look for
@@ -393,10 +378,8 @@ type SubscriptionFilter struct {
 	DestinationARN *string `json:"destinationARN,omitempty"`
 	// The method used to distribute log data to the destination, which can be either
 	// random or grouped by log stream.
-	Distribution           *string   `json:"distribution,omitempty"`
-	EmitSystemFields       []*string `json:"emitSystemFields,omitempty"`
-	FieldSelectionCriteria *string   `json:"fieldSelectionCriteria,omitempty"`
-	FilterName             *string   `json:"filterName,omitempty"`
+	Distribution *string `json:"distribution,omitempty"`
+	FilterName   *string `json:"filterName,omitempty"`
 	// A symbolic description of how CloudWatch Logs should interpret the data in
 	// each log event. For example, a log event can contain timestamps, IP addresses,
 	// strings, and so on. You use the filter pattern to specify what to look for

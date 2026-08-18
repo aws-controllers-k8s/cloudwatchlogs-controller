@@ -73,9 +73,9 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
-	var resp *svcsdk.ListLogGroupsOutput
-	resp, err = rm.sdkapi.ListLogGroups(ctx, input)
-	rm.metrics.RecordAPICall("READ_MANY", "ListLogGroups", err)
+	var resp *svcsdk.DescribeLogGroupsOutput
+	resp, err = rm.sdkapi.DescribeLogGroups(ctx, input)
+	rm.metrics.RecordAPICall("READ_MANY", "DescribeLogGroups", err)
 	if err != nil {
 		var awsErr smithy.APIError
 		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "UNKNOWN" {
@@ -90,12 +90,51 @@ func (rm *resourceManager) sdkFind(
 
 	found := false
 	for _, elem := range resp.LogGroups {
+		if elem.Arn != nil {
+			if ko.Status.ACKResourceMetadata == nil {
+				ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+			}
+			tmpARN := ackv1alpha1.AWSResourceName(*elem.Arn)
+			ko.Status.ACKResourceMetadata.ARN = &tmpARN
+		}
+		if elem.CreationTime != nil {
+			ko.Status.CreationTime = elem.CreationTime
+		} else {
+			ko.Status.CreationTime = nil
+		}
+		if elem.DataProtectionStatus != "" {
+			ko.Status.DataProtectionStatus = aws.String(string(elem.DataProtectionStatus))
+		} else {
+			ko.Status.DataProtectionStatus = nil
+		}
+		if elem.KmsKeyId != nil {
+			ko.Spec.KMSKeyID = elem.KmsKeyId
+		} else {
+			ko.Spec.KMSKeyID = nil
+		}
 		if elem.LogGroupArn != nil {
 			if ko.Status.ACKResourceMetadata == nil {
 				ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
 			}
 			tmpARN := ackv1alpha1.AWSResourceName(*elem.LogGroupArn)
 			ko.Status.ACKResourceMetadata.ARN = &tmpARN
+		}
+		if elem.MetricFilterCount != nil {
+			metricFilterCountCopy := int64(*elem.MetricFilterCount)
+			ko.Status.MetricFilterCount = &metricFilterCountCopy
+		} else {
+			ko.Status.MetricFilterCount = nil
+		}
+		if elem.RetentionInDays != nil {
+			retentionInDaysCopy := int64(*elem.RetentionInDays)
+			ko.Status.RetentionInDays = &retentionInDaysCopy
+		} else {
+			ko.Status.RetentionInDays = nil
+		}
+		if elem.StoredBytes != nil {
+			ko.Status.StoredBytes = elem.StoredBytes
+		} else {
+			ko.Status.StoredBytes = nil
 		}
 		found = true
 		break
@@ -126,15 +165,20 @@ func (rm *resourceManager) sdkFind(
 func (rm *resourceManager) requiredFieldsMissingFromReadManyInput(
 	r *resource,
 ) bool {
-	return false
+	return r.ko.Spec.Name == nil
+
 }
 
 // newListRequestPayload returns SDK-specific struct for the HTTP request
 // payload of the List API call for the resource
 func (rm *resourceManager) newListRequestPayload(
 	r *resource,
-) (*svcsdk.ListLogGroupsInput, error) {
-	res := &svcsdk.ListLogGroupsInput{}
+) (*svcsdk.DescribeLogGroupsInput, error) {
+	res := &svcsdk.DescribeLogGroupsInput{}
+
+	if r.ko.Spec.Name != nil {
+		res.LogGroupNamePrefix = r.ko.Spec.Name
+	}
 
 	return res, nil
 }
@@ -199,9 +243,6 @@ func (rm *resourceManager) newCreateRequestPayload(
 ) (*svcsdk.CreateLogGroupInput, error) {
 	res := &svcsdk.CreateLogGroupInput{}
 
-	if r.ko.Spec.DeletionProtectionEnabled != nil {
-		res.DeletionProtectionEnabled = r.ko.Spec.DeletionProtectionEnabled
-	}
 	if r.ko.Spec.KMSKeyID != nil {
 		res.KmsKeyId = r.ko.Spec.KMSKeyID
 	}

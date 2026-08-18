@@ -43,13 +43,6 @@ func newResourceDelta(
 	}
 	customPreCompare(delta, a, b)
 
-	if ackcompare.HasNilDifference(a.ko.Spec.DeletionProtectionEnabled, b.ko.Spec.DeletionProtectionEnabled) {
-		delta.Add("Spec.DeletionProtectionEnabled", a.ko.Spec.DeletionProtectionEnabled, b.ko.Spec.DeletionProtectionEnabled)
-	} else if a.ko.Spec.DeletionProtectionEnabled != nil && b.ko.Spec.DeletionProtectionEnabled != nil {
-		if *a.ko.Spec.DeletionProtectionEnabled != *b.ko.Spec.DeletionProtectionEnabled {
-			delta.Add("Spec.DeletionProtectionEnabled", a.ko.Spec.DeletionProtectionEnabled, b.ko.Spec.DeletionProtectionEnabled)
-		}
-	}
 	if ackcompare.HasNilDifference(a.ko.Spec.KMSKeyID, b.ko.Spec.KMSKeyID) {
 		delta.Add("Spec.KMSKeyID", a.ko.Spec.KMSKeyID, b.ko.Spec.KMSKeyID)
 	} else if a.ko.Spec.KMSKeyID != nil && b.ko.Spec.KMSKeyID != nil {
