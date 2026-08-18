@@ -43,6 +43,12 @@ spec:
               A policy enabling one or more entities to put logs to a log group in this
               account.
             properties:
+              expectedRevisionID:
+                description: |-
+                  The expected revision ID of the resource policy. Required when resourceArn
+                  is provided to prevent concurrent modifications. Use null when creating a
+                  resource policy for the first time.
+                type: string
               policyDocument:
                 description: |-
                   Details of the new policy, including the identity of the principal that is
@@ -54,8 +60,8 @@ spec:
                   the ARN of your CloudWatch Logs resource, such as a log group or log stream.
 
                   CloudWatch Logs also supports aws:SourceArn (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html#condition-keys-sourcearn)
-                  and aws:SourceAccount (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html#condition-keys-sourceaccount)condition
-                  context keys.
+                  and aws:SourceAccount (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html#condition-keys-sourceaccount)
+                  condition context keys.
 
                   In the example resource policy, you would replace the value of SourceArn
                   with the resource making the call from Route 53 to CloudWatch Logs. You would
@@ -66,10 +72,18 @@ spec:
                   "Effect": "Allow", "Principal": { "Service": [ "route53.amazonaws.com" ]
                   }, "Action": "logs:PutLogEvents", "Resource": "logArn", "Condition": { "ArnLike":
                   { "aws:SourceArn": "myRoute53ResourceArn" }, "StringEquals": { "aws:SourceAccount":
-                  "myAwsAccountId" } } } ]}
+                  "myAwsAccountId" } } } ] }
                 type: string
               policyName:
                 description: Name of the new policy. This parameter is required.
+                type: string
+                x-kubernetes-validations:
+                - message: Value is immutable once set
+                  rule: self == oldSelf
+              resourceARN:
+                description: |-
+                  The ARN of the CloudWatch Logs resource to which the resource policy needs
+                  to be added or attached. Currently only supports LogGroup ARN.
                 type: string
                 x-kubernetes-validations:
                 - message: Value is immutable once set
@@ -152,6 +166,15 @@ spec:
                   of milliseconds after Jan 1, 1970 00:00:00 UTC.
                 format: int64
                 type: integer
+              policyScope:
+                description: Specifies scope of the resource policy. Valid values
+                  are ACCOUNT or RESOURCE.
+                type: string
+              revisionID:
+                description: |-
+                  The revision ID of the resource policy. Only populated for resource-scoped
+                  policies.
+                type: string
             type: object
         type: object
     served: true

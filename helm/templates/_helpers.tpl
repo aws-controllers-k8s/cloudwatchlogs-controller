@@ -73,25 +73,6 @@ rules:
   - cloudwatchlogs.services.k8s.aws
   resources:
   - loggroups
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - cloudwatchlogs.services.k8s.aws
-  resources:
-  - loggroups/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - cloudwatchlogs.services.k8s.aws
-  resources:
   - resourcepolicies
   verbs:
   - create
@@ -104,6 +85,7 @@ rules:
 - apiGroups:
   - cloudwatchlogs.services.k8s.aws
   resources:
+  - loggroups/status
   - resourcepolicies/status
   verbs:
   - get
