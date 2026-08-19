@@ -16,8 +16,6 @@
 package resource_policy
 
 import (
-	"fmt"
-
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	ackerrors "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
@@ -108,10 +106,9 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 // PopulateResourceFromAnnotation populates the fields passed from adoption annotation
 func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) error {
 	primaryKey, ok := fields["policyName"]
-	if !ok {
-		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: policyName"))
+	if ok {
+		r.ko.Spec.PolicyName = &primaryKey
 	}
-	r.ko.Spec.PolicyName = &primaryKey
 
 	f2, f2ok := fields["policyScope"]
 	if f2ok {

@@ -106,6 +106,12 @@ resources:
     update_operation:
       custom_method_name: customUpdateLogGroup
   ResourcePolicy:
+    # ResourcePolicy has no single mandatory identifier: account-scoped policies
+    # are keyed by PolicyName while resource-scoped policies are keyed by
+    # ResourceARN. PolicyName is designated the primary key so identifier code
+    # still generates, and is_primary_key_optional makes adoption populate
+    # whichever identifier fields the user supplies without requiring PolicyName.
+    is_primary_key_optional: true
     exceptions:
       terminal_codes:
         - InvalidParameterException
@@ -129,9 +135,22 @@ resources:
     tags:
       ignore: true
     hooks:
+      # Resource-scoped policies (Spec.ResourceARN set, no PolicyName) are keyed
+      # by ARN and carry a revision ID. These hooks tailor the shared
+      # PutResourcePolicy/DescribeResourcePolicies/DeleteResourcePolicy calls for
+      # that case; all are guarded on Spec.ResourceARN so the account-scoped path
+      # is unchanged.
       sdk_read_many_post_build_request:
         template_path: hooks/resource_policy/sdk_read_many_post_build_request.go.tpl
       sdk_update_post_build_request:
         template_path: hooks/resource_policy/sdk_update_post_build_request.go.tpl
       sdk_delete_post_build_request:
         template_path: hooks/resource_policy/sdk_delete_post_build_request.go.tpl
+      # PutResourcePolicy returns the revision ID for resource-scoped policies
+      # only at the top level of the response, not in the nested ResourcePolicy
+      # shape the generated field mapping reads. These hooks copy the top-level
+      # value into Status.RevisionID so it survives create and update.
+      sdk_create_post_set_output:
+        template_path: hooks/resource_policy/sdk_create_post_set_output.go.tpl
+      sdk_update_post_set_output:
+        template_path: hooks/resource_policy/sdk_update_post_set_output.go.tpl
