@@ -28,6 +28,7 @@ License version 2.0, we include the full text of the package's License below.
 * `github.com/aws/smithy-go`
 * `github.com/go-logr/logr`
 * `github.com/spf13/pflag`
+* `github.com/stretchr/testify`
 * `k8s.io/api`
 * `k8s.io/apimachinery`
 * `k8s.io/client-go`
@@ -2041,6 +2042,8 @@ Subdependencies:
 #### github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream
 
 License Identifier: Apache-2.0
+
+
 
 
 
