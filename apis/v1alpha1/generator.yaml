@@ -39,6 +39,17 @@ operations:
       - Create
       - Update
     output_wrapper_field_path: ResourcePolicy
+  DescribeResourcePolicies:
+    resource_name: ResourcePolicy
+    operation_type:
+      - List
+    # DescribeResourcePolicies takes no required input fields, so the generated
+    # requiredFieldsMissingFromReadManyInput always returns false. That makes an
+    # empty resource (no PolicyName, no ResourceARN) match the first policy the
+    # API returns, causing an arbitrary account-scoped policy to be adopted.
+    # This custom method treats the read input as incomplete unless at least one
+    # identifier is supplied, so sdkFind returns NotFound instead.
+    custom_check_required_fields_missing_method: customCheckRequiredFieldsMissing
 resources:
   LogGroup:
     exceptions:

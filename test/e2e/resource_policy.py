@@ -24,6 +24,63 @@ DEFAULT_WAIT_UNTIL_DELETED_TIMEOUT_SECONDS = 60 * 10
 DEFAULT_WAIT_UNTIL_DELETED_INTERVAL_SECONDS = 10
 
 
+def put_account_scoped(policy_name: str, policy_document: str):
+    """Creates an account-scoped resource policy directly via the CloudWatch
+    Logs API, bypassing the controller. Used to seed a pre-existing policy for
+    adoption tests.
+    """
+    cwl = boto3.client("logs")
+    cwl.put_resource_policy(
+        policyName=policy_name,
+        policyDocument=policy_document,
+    )
+
+
+def put_resource_scoped(resource_arn: str, policy_document: str):
+    """Creates a resource-scoped resource policy directly via the CloudWatch
+    Logs API, bypassing the controller. Resource-scoped policies are keyed by
+    their resource ARN; the API infers the RESOURCE scope from its presence.
+    """
+    cwl = boto3.client("logs")
+    cwl.put_resource_policy(
+        policyDocument=policy_document,
+        resourceArn=resource_arn,
+    )
+
+
+def delete_account_scoped(policy_name: str):
+    """Best-effort deletion of an account-scoped resource policy via the
+    CloudWatch Logs API. Safe to call during teardown even if the policy is
+    already gone.
+    """
+    cwl = boto3.client("logs")
+    try:
+        cwl.delete_resource_policy(policyName=policy_name)
+    except Exception:
+        pass
+
+
+def delete_resource_scoped(resource_arn: str):
+    """Best-effort deletion of a resource-scoped resource policy via the
+    CloudWatch Logs API. Safe to call during teardown even if the policy is
+    already gone.
+
+    Resource-scoped policies carry a revision ID and DeleteResourcePolicy
+    requires a matching expectedRevisionId, so look the current one up first.
+    """
+    policy = get_resource_scoped(resource_arn)
+    if policy is None:
+        return
+    cwl = boto3.client("logs")
+    try:
+        cwl.delete_resource_policy(
+            resourceArn=resource_arn,
+            expectedRevisionId=policy["revisionId"],
+        )
+    except Exception:
+        pass
+
+
 def get(policy_name: str):
     """Returns the CloudWatch Logs resource policy with the given name, or None."""
     cwl = boto3.client("logs")

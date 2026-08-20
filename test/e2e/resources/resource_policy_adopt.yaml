@@ -1,0 +1,13 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: ResourcePolicy
+metadata:
+  name: $ADOPTION_NAME
+  annotations:
+    # The identifying fields (policyName or resourceARN) are supplied through
+    # the adoption-fields annotation so the controller reads the existing
+    # policy rather than creating a new one. deletion-policy retain leaves the
+    # underlying AWS policy in place when the CR is deleted; the test cleans it
+    # up out-of-band.
+    services.k8s.aws/adoption-policy: adopt
+    services.k8s.aws/adoption-fields: "$ADOPTION_FIELDS"
+    services.k8s.aws/deletion-policy: retain
