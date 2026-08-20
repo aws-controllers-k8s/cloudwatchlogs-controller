@@ -17,14 +17,12 @@ package v1alpha1
 
 import (
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
-	"github.com/aws/aws-sdk-go/aws"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Hack to avoid import errors during build...
 var (
 	_ = &metav1.Time{}
-	_ = &aws.JSONValue{}
 	_ = ackv1alpha1.AWSAccountID("")
 )
 
@@ -32,6 +30,7 @@ var (
 type AccountPolicy struct {
 	AccountID       *string `json:"accountID,omitempty"`
 	LastUpdatedTime *int64  `json:"lastUpdatedTime,omitempty"`
+	PolicyName      *string `json:"policyName,omitempty"`
 }
 
 // Contains information about one anomaly detector in the account.
@@ -62,7 +61,7 @@ type Delivery struct {
 // This structure contains information about one delivery destination in your
 // account. A delivery destination is an Amazon Web Services resource that represents
 // an Amazon Web Services service that logs can be sent to. CloudWatch Logs,
-// Amazon S3, are supported as Firehose delivery destinations.
+// Amazon S3, Firehose, and X-Ray are supported as delivery destinations.
 //
 // To configure logs delivery between a supported Amazon Web Services service
 // and a destination, you must do the following:
@@ -156,9 +155,10 @@ type ExportTaskExecutionInfo struct {
 // This structure describes one log event field that is used as an index in
 // at least one index policy in this account.
 type FieldIndex struct {
-	FirstEventTime *int64 `json:"firstEventTime,omitempty"`
-	LastEventTime  *int64 `json:"lastEventTime,omitempty"`
-	LastScanTime   *int64 `json:"lastScanTime,omitempty"`
+	FirstEventTime     *int64  `json:"firstEventTime,omitempty"`
+	LastEventTime      *int64  `json:"lastEventTime,omitempty"`
+	LastScanTime       *int64  `json:"lastScanTime,omitempty"`
+	LogGroupIdentifier *string `json:"logGroupIdentifier,omitempty"`
 }
 
 // Represents a matched event.
@@ -167,10 +167,32 @@ type FilteredLogEvent struct {
 	Timestamp     *int64 `json:"timestamp,omitempty"`
 }
 
+// An import job to move data from CloudTrail Event Data Store to CloudWatch.
+type Import struct {
+	CreationTime         *int64  `json:"creationTime,omitempty"`
+	ImportDestinationARN *string `json:"importDestinationARN,omitempty"`
+	ImportSourceARN      *string `json:"importSourceARN,omitempty"`
+	LastUpdatedTime      *int64  `json:"lastUpdatedTime,omitempty"`
+}
+
+// The filter criteria used for import tasks
+type ImportFilter struct {
+	EndEventTime   *int64 `json:"endEventTime,omitempty"`
+	StartEventTime *int64 `json:"startEventTime,omitempty"`
+}
+
+// Statistics about the import progress
+type ImportStatistics struct {
+	BytesImported *int64 `json:"bytesImported,omitempty"`
+}
+
 // This structure contains information about one field index policy in this
 // account.
 type IndexPolicy struct {
-	LastUpdateTime *int64 `json:"lastUpdateTime,omitempty"`
+	LastUpdateTime     *int64  `json:"lastUpdateTime,omitempty"`
+	LogGroupIdentifier *string `json:"logGroupIdentifier,omitempty"`
+	PolicyDocument     *string `json:"policyDocument,omitempty"`
+	PolicyName         *string `json:"policyName,omitempty"`
 }
 
 // Represents a log event, which is a record of activity that was recorded by
@@ -182,8 +204,9 @@ type InputLogEvent struct {
 // This object contains the information for one log event returned in a Live
 // Tail stream.
 type LiveTailSessionLogEvent struct {
-	IngestionTime *int64 `json:"ingestionTime,omitempty"`
-	Timestamp     *int64 `json:"timestamp,omitempty"`
+	IngestionTime      *int64  `json:"ingestionTime,omitempty"`
+	LogGroupIdentifier *string `json:"logGroupIdentifier,omitempty"`
+	Timestamp          *int64  `json:"timestamp,omitempty"`
 }
 
 // This object contains information about this Live Tail session, including
@@ -202,17 +225,26 @@ type LogEvent struct {
 	Timestamp *int64 `json:"timestamp,omitempty"`
 }
 
+// This structure contains information about one log group in your account.
+type LogGroupSummary struct {
+	LogGroupARN   *string `json:"logGroupARN,omitempty"`
+	LogGroupClass *string `json:"logGroupClass,omitempty"`
+	LogGroupName  *string `json:"logGroupName,omitempty"`
+}
+
 // Represents a log group.
 type LogGroup_SDK struct {
-	ARN                  *string   `json:"arn,omitempty"`
-	CreationTime         *int64    `json:"creationTime,omitempty"`
-	DataProtectionStatus *string   `json:"dataProtectionStatus,omitempty"`
-	InheritedProperties  []*string `json:"inheritedProperties,omitempty"`
-	KMSKeyID             *string   `json:"kmsKeyID,omitempty"`
-	LogGroupARN          *string   `json:"logGroupARN,omitempty"`
-	LogGroupClass        *string   `json:"logGroupClass,omitempty"`
-	LogGroupName         *string   `json:"logGroupName,omitempty"`
-	MetricFilterCount    *int64    `json:"metricFilterCount,omitempty"`
+	ARN                              *string   `json:"arn,omitempty"`
+	BearerTokenAuthenticationEnabled *bool     `json:"bearerTokenAuthenticationEnabled,omitempty"`
+	CreationTime                     *int64    `json:"creationTime,omitempty"`
+	DataProtectionStatus             *string   `json:"dataProtectionStatus,omitempty"`
+	DeletionProtectionEnabled        *bool     `json:"deletionProtectionEnabled,omitempty"`
+	InheritedProperties              []*string `json:"inheritedProperties,omitempty"`
+	KMSKeyID                         *string   `json:"kmsKeyID,omitempty"`
+	LogGroupARN                      *string   `json:"logGroupARN,omitempty"`
+	LogGroupClass                    *string   `json:"logGroupClass,omitempty"`
+	LogGroupName                     *string   `json:"logGroupName,omitempty"`
+	MetricFilterCount                *int64    `json:"metricFilterCount,omitempty"`
 	// The number of days to retain the log events in the specified log group. Possible
 	// values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731,
 	// 1096, 1827, 2192, 2557, 2922, 3288, and 3653.
@@ -308,8 +340,36 @@ type QueryInfo struct {
 
 // A policy enabling one or more entities to put logs to a log group in this
 // account.
-type ResourcePolicy struct {
-	LastUpdatedTime *int64 `json:"lastUpdatedTime,omitempty"`
+type ResourcePolicy_SDK struct {
+	LastUpdatedTime *int64  `json:"lastUpdatedTime,omitempty"`
+	PolicyDocument  *string `json:"policyDocument,omitempty"`
+	PolicyName      *string `json:"policyName,omitempty"`
+	PolicyScope     *string `json:"policyScope,omitempty"`
+	ResourceARN     *string `json:"resourceARN,omitempty"`
+	RevisionID      *string `json:"revisionID,omitempty"`
+}
+
+// Configuration for Amazon S3 destination where scheduled query results are
+// delivered.
+type S3Configuration struct {
+	KMSKeyID       *string `json:"kmsKeyID,omitempty"`
+	OwnerAccountID *string `json:"ownerAccountID,omitempty"`
+	RoleARN        *string `json:"roleARN,omitempty"`
+}
+
+// Represents a data source association with an S3 Table Integration, including
+// its status and metadata.
+type S3TableIntegrationSource struct {
+	CreatedTimeStamp *int64 `json:"createdTimeStamp,omitempty"`
+}
+
+// Summary information about a scheduled query, including basic configuration
+// and execution status.
+type ScheduledQuerySummary struct {
+	CreationTime      *int64  `json:"creationTime,omitempty"`
+	LastTriggeredTime *int64  `json:"lastTriggeredTime,omitempty"`
+	LastUpdatedTime   *int64  `json:"lastUpdatedTime,omitempty"`
+	ScheduledQueryARN *string `json:"scheduledQueryARN,omitempty"`
 }
 
 // Represents a subscription filter.
@@ -327,4 +387,10 @@ type SubscriptionFilter struct {
 	FilterPattern *string `json:"filterPattern,omitempty"`
 	LogGroupName  *string `json:"logGroupName,omitempty"`
 	RoleARN       *string `json:"roleARN,omitempty"`
+}
+
+// A record of a scheduled query execution, including execution status, timestamp,
+// and destination processing results.
+type TriggerHistoryRecord struct {
+	TriggeredTimestamp *int64 `json:"triggeredTimestamp,omitempty"`
 }

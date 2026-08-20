@@ -17,6 +17,7 @@ rules:
   - cloudwatchlogs.services.k8s.aws
   resources:
   - loggroups
+  - resourcepolicies
   verbs:
   - get
   - list

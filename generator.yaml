@@ -6,13 +6,58 @@ ignore:
   resource_names:
     - Delivery
     - ExportTask
+    - ImportTask
+    - ScheduledQuery
     #- LogGroup
     - LogStream
     - LogAnomalyDetector
   field_paths:
     - PutSubscriptionFilterInput.LogGroupName
+    - PutResourcePolicyInput.ExpectedRevisionId
+    # PolicyScope is not an identifier: it is inferred from whether PolicyName
+    # (ACCOUNT) or ResourceARN (RESOURCE) is set. Ignoring it on the ReadMany
+    # input drops it from PopulateResourceFromAnnotation (so it can't be given
+    # as a meaningless adoption field) and from newListRequestPayload (the
+    # sdk_read_many_post_build_request hook sets the scope from ResourceARN).
+    # Status.PolicyScope, sourced from the DescribeResourcePolicies output, is
+    # unaffected.
+    - DescribeResourcePoliciesInput.PolicyScope
     - CreateLogGroupInput.LogGroupClass
     - PutSubscriptionFilterInput.ApplyOnTransformedLogs
+    - CreateLogGroupInput.DeletionProtectionEnabled
+    - PutSubscriptionFilterInput.EmitSystemFields
+    - PutSubscriptionFilterInput.FieldSelectionCriteria
+operations:
+  # CloudWatch Logs exposes both DescribeLogGroups and ListLogGroups as
+  # candidate ReadMany (List) operations for LogGroup. The generator's
+  # heuristic picks ListLogGroups, but that API has no name-prefix filter and
+  # returns a slim LogGroupSummary, which breaks exact-name lookups and drops
+  # status fields. Pin the ReadMany operation to DescribeLogGroups explicitly.
+  DescribeLogGroups:
+    resource_name: LogGroup
+    operation_type: List
+  PutResourcePolicy:
+    resource_name: ResourcePolicy
+    # PutResourcePolicy is an idempotent upsert, so it serves as both the
+    # Create and Update operation. Mapping it to Update lets the generator emit
+    # a standard sdkUpdate; the ExpectedRevisionId injection needed for
+    # resource-scoped policies is handled by the sdk_update_post_build_request
+    # hook rather than a full custom update method.
+    operation_type:
+      - Create
+      - Update
+    output_wrapper_field_path: ResourcePolicy
+  DescribeResourcePolicies:
+    resource_name: ResourcePolicy
+    operation_type:
+      - List
+    # DescribeResourcePolicies takes no required input fields, so the generated
+    # requiredFieldsMissingFromReadManyInput always returns false. That makes an
+    # empty resource (no PolicyName, no ResourceARN) match the first policy the
+    # API returns, causing an arbitrary account-scoped policy to be adopted.
+    # This custom method treats the read input as incomplete unless at least one
+    # identifier is supplied, so sdkFind returns NotFound instead.
+    custom_check_required_fields_missing_method: customCheckRequiredFieldsMissing
 resources:
   LogGroup:
     exceptions:
@@ -79,3 +124,52 @@ resources:
         template_path: hooks/log_group/sdk_read_many_post_set_output.go.tpl
     update_operation:
       custom_method_name: customUpdateLogGroup
+  ResourcePolicy:
+    # ResourcePolicy has no single mandatory identifier: account-scoped policies
+    # are keyed by PolicyName while resource-scoped policies are keyed by
+    # ResourceARN. PolicyName is designated the primary key so identifier code
+    # still generates, and is_primary_key_optional makes adoption populate
+    # whichever identifier fields the user supplies without requiring PolicyName.
+    is_primary_key_optional: true
+    exceptions:
+      terminal_codes:
+        - InvalidParameterException
+    fields:
+      PolicyName:
+        is_primary_key: true
+        is_immutable: true
+      PolicyDocument:
+        is_iam_policy: true
+      ResourceArn:
+        is_immutable: true
+      LastUpdatedTime:
+        is_read_only: true
+      PolicyScope:
+        is_read_only: true
+      RevisionId:
+        is_read_only: true
+    list_operation:
+      match_fields:
+        - PolicyName
+    tags:
+      ignore: true
+    hooks:
+      # Resource-scoped policies (Spec.ResourceARN set, no PolicyName) are keyed
+      # by ARN and carry a revision ID. These hooks tailor the shared
+      # PutResourcePolicy/DescribeResourcePolicies/DeleteResourcePolicy calls for
+      # that case; all are guarded on Spec.ResourceARN so the account-scoped path
+      # is unchanged.
+      sdk_read_many_post_build_request:
+        template_path: hooks/resource_policy/sdk_read_many_post_build_request.go.tpl
+      sdk_update_post_build_request:
+        template_path: hooks/resource_policy/sdk_update_post_build_request.go.tpl
+      sdk_delete_post_build_request:
+        template_path: hooks/resource_policy/sdk_delete_post_build_request.go.tpl
+      # PutResourcePolicy returns the revision ID for resource-scoped policies
+      # only at the top level of the response, not in the nested ResourcePolicy
+      # shape the generated field mapping reads. These hooks copy the top-level
+      # value into Status.RevisionID so it survives create and update.
+      sdk_create_post_set_output:
+        template_path: hooks/resource_policy/sdk_create_post_set_output.go.tpl
+      sdk_update_post_set_output:
+        template_path: hooks/resource_policy/sdk_update_post_set_output.go.tpl

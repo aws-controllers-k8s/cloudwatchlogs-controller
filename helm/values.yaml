@@ -151,6 +151,7 @@ reconcile:
   # If specified, only the listed resource kinds will be reconciled.
   resources:
     - LogGroup
+    - ResourcePolicy
 
 serviceAccount:
   # Specifies whether a service account should be created
