@@ -91,13 +91,9 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 	}
 	r.ko.Spec.PolicyName = &identifier.NameOrID
 
-	f2, f2ok := identifier.AdditionalKeys["policyScope"]
+	f2, f2ok := identifier.AdditionalKeys["resourceARN"]
 	if f2ok {
-		r.ko.Status.PolicyScope = aws.String(f2)
-	}
-	f3, f3ok := identifier.AdditionalKeys["resourceARN"]
-	if f3ok {
-		r.ko.Spec.ResourceARN = aws.String(f3)
+		r.ko.Spec.ResourceARN = aws.String(f2)
 	}
 
 	return nil
@@ -110,13 +106,9 @@ func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) erro
 		r.ko.Spec.PolicyName = &primaryKey
 	}
 
-	f2, f2ok := fields["policyScope"]
+	f2, f2ok := fields["resourceARN"]
 	if f2ok {
-		r.ko.Status.PolicyScope = aws.String(f2)
-	}
-	f3, f3ok := fields["resourceARN"]
-	if f3ok {
-		r.ko.Spec.ResourceARN = aws.String(f3)
+		r.ko.Spec.ResourceARN = aws.String(f2)
 	}
 
 	return nil

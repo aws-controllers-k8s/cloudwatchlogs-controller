@@ -14,6 +14,14 @@ ignore:
   field_paths:
     - PutSubscriptionFilterInput.LogGroupName
     - PutResourcePolicyInput.ExpectedRevisionId
+    # PolicyScope is not an identifier: it is inferred from whether PolicyName
+    # (ACCOUNT) or ResourceARN (RESOURCE) is set. Ignoring it on the ReadMany
+    # input drops it from PopulateResourceFromAnnotation (so it can't be given
+    # as a meaningless adoption field) and from newListRequestPayload (the
+    # sdk_read_many_post_build_request hook sets the scope from ResourceARN).
+    # Status.PolicyScope, sourced from the DescribeResourcePolicies output, is
+    # unaffected.
+    - DescribeResourcePoliciesInput.PolicyScope
     - CreateLogGroupInput.LogGroupClass
     - PutSubscriptionFilterInput.ApplyOnTransformedLogs
     - CreateLogGroupInput.DeletionProtectionEnabled

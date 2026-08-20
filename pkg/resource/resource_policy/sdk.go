@@ -160,9 +160,6 @@ func (rm *resourceManager) newListRequestPayload(
 ) (*svcsdk.DescribeResourcePoliciesInput, error) {
 	res := &svcsdk.DescribeResourcePoliciesInput{}
 
-	if r.ko.Status.PolicyScope != nil {
-		res.PolicyScope = svcsdktypes.PolicyScope(*r.ko.Status.PolicyScope)
-	}
 	if r.ko.Spec.ResourceARN != nil {
 		res.ResourceArn = r.ko.Spec.ResourceARN
 	}
