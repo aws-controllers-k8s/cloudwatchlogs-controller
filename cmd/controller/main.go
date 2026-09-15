@@ -42,6 +42,7 @@ import (
 	svctypes "github.com/aws-controllers-k8s/cloudwatchlogs-controller/apis/v1alpha1"
 	svcresource "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource"
 
+	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/delivery_source"
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/log_group"
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/resource_policy"
 

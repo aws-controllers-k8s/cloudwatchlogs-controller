@@ -1,0 +1,8 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliverySource
+metadata:
+  name: $DELIVERY_SOURCE_NAME
+spec:
+  name: $DELIVERY_SOURCE_NAME
+  logType: $LOG_TYPE
+  resourceARN: $RESOURCE_ARN

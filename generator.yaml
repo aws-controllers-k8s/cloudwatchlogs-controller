@@ -56,7 +56,30 @@ operations:
     # generated requiredFieldsMissingFromReadManyInput so it treats the read
     # input as incomplete (and sdkFind returns NotFound) unless at least one of
     # PolicyName or ResourceARN is set, instead of matching an arbitrary policy.
+  PutDeliverySource:
+    resource_name: DeliverySource
+    # PutDeliverySource is an idempotent upsert: it creates a new delivery
+    # source or overwrites all parameters of an existing one. Map it as both
+    # Create and Update so the generator emits sdkCreate and sdkUpdate from
+    # the same API call.
+    operation_type:
+      - Create
+      - Update
+    output_wrapper_field_path: DeliverySource
 resources:
+  DeliverySource:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - ValidationException
+    fields:
+      Name:
+        is_primary_key: true
+        is_immutable: true
+    tags:
+      ignore: true
   LogGroup:
     exceptions:
       terminal_codes:
