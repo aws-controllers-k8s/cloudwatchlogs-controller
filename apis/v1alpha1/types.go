@@ -43,6 +43,14 @@ type AnomalyDetector struct {
 	KMSKeyID      *string `json:"kmsKeyID,omitempty"`
 }
 
+// A structure containing information about the deafult settings and available
+// settings that you can use to configure a delivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_Delivery.html)
+// or a delivery destination (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_DeliveryDestination.html).
+type ConfigurationTemplate struct {
+	LogType *string `json:"logType,omitempty"`
+	Service *string `json:"service,omitempty"`
+}
+
 // This structure contains information about one delivery in your account.
 //
 // A delivery is a connection between a logical delivery source and a logical
@@ -55,6 +63,7 @@ type AnomalyDetector struct {
 type Delivery struct {
 	ARN                    *string            `json:"arn,omitempty"`
 	DeliveryDestinationARN *string            `json:"deliveryDestinationARN,omitempty"`
+	DeliverySourceName     *string            `json:"deliverySourceName,omitempty"`
 	Tags                   map[string]*string `json:"tags,omitempty"`
 }
 
@@ -127,9 +136,13 @@ type DeliveryDestinationConfiguration struct {
 // by creating multiple deliveries. You can also create multiple deliveries
 // to configure multiple delivery sources to send logs to the same delivery
 // destination.
-type DeliverySource struct {
-	ARN  *string            `json:"arn,omitempty"`
-	Tags map[string]*string `json:"tags,omitempty"`
+type DeliverySource_SDK struct {
+	ARN          *string            `json:"arn,omitempty"`
+	LogType      *string            `json:"logType,omitempty"`
+	Name         *string            `json:"name,omitempty"`
+	ResourceARNs []*string          `json:"resourceARNs,omitempty"`
+	Service      *string            `json:"service,omitempty"`
+	Tags         map[string]*string `json:"tags,omitempty"`
 }
 
 // Represents a cross-account destination that receives subscription log events.

@@ -72,6 +72,7 @@ rules:
 - apiGroups:
   - cloudwatchlogs.services.k8s.aws
   resources:
+  - deliverysources
   - loggroups
   - resourcepolicies
   verbs:
@@ -85,6 +86,7 @@ rules:
 - apiGroups:
   - cloudwatchlogs.services.k8s.aws
   resources:
+  - deliverysources/status
   - loggroups/status
   - resourcepolicies/status
   verbs:
