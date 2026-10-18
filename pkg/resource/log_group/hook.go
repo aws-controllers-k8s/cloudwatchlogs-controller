@@ -15,8 +15,10 @@ package log_group
 
 import (
 	"context"
+	"errors"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
+	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	svcsdk "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
@@ -24,6 +26,12 @@ import (
 
 	svcapitypes "github.com/aws-controllers-k8s/cloudwatchlogs-controller/apis/v1alpha1"
 	"github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/sync"
+)
+
+// requeueSyncSubscriptionFilters is returned after a create that carries
+// subscription filters so the next reconcile syncs them.
+var requeueSyncSubscriptionFilters = ackrequeue.Needed(
+	errors.New("requeueing to sync the subscription filters after create"),
 )
 
 func (rm *resourceManager) updateRetentionPeriod(
