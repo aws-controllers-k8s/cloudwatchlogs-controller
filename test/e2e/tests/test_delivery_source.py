@@ -111,87 +111,15 @@ def _delivery_source(request):
 @service_marker
 @pytest.mark.canary
 class TestDeliverySource:
-    def test_crud(self, _delivery_source):
-        (ref, cr) = _delivery_source
-        ds_name = ref.name
-
-        # Verify resource is synced
-        time.sleep(CREATE_WAIT_AFTER_SECONDS)
-        condition.assert_synced(ref)
-
-        # Verify delivery source exists in AWS
-        aws_ds = delivery_source.get(ds_name)
-        assert aws_ds is not None
-        assert aws_ds["name"] == ds_name
-        assert aws_ds["logType"] == "NLB_ACCESS_LOGS"
-
-        # Verify status fields are populated
-        cr = k8s.get_resource(ref)
-        assert cr["status"].get("ackResourceMetadata", {}).get("arn") is not None
-        assert cr["status"].get("service") is not None
-
-        # Delete: handled by fixture teardown
-
-    def test_tags(self, _delivery_source):
-        (ref, cr) = _delivery_source
-        ds_name = ref.name
-
-        time.sleep(CREATE_WAIT_AFTER_SECONDS)
-        condition.assert_synced(ref)
-
-        cr = k8s.get_resource(ref)
-        ds_arn = cr["status"]["ackResourceMetadata"]["arn"]
-
-        # (a) Create carries no user tags yet; patch two user tags onto the
-        # spec and assert both the user tags and the ACK default controller
-        # tags (services.k8s.aws/*) land on the delivery source. Tags are
-        # reconciled out of band by rm.syncTags, so poll until the user tags
-        # converge before asserting (removes the fixed-sleep timing flake).
-        user_tags = {
-            "environment": "dev",
-            "team": "observability",
-        }
-        updates = {"spec": {"tags": user_tags}}
-        k8s.patch_custom_resource(ref, updates)
-        condition.assert_synced(ref)
-
-        latest_tags = wait_for_user_tags(ds_arn, user_tags)
-        tags.assert_ack_system_tags(
-            tags=latest_tags,
-        )
-        tags.assert_equal_without_ack_tags(
-            expected=user_tags,
-            actual=latest_tags,
-        )
-
-        # (b) Change one value and remove one key, then assert the standalone
-        # TagResource/UntagResource reconciliation (rm.syncTags) applied both.
-        #
-        # A merge patch leaves map keys that are omitted from the patch body
-        # untouched, so patching spec.tags with only {environment: prod} would
-        # NOT remove the "team" key from the CR -- the controller would never
-        # see a desired without "team" and UntagResource would never fire.
-        # Fully replace the resource so spec.tags is exactly the new map and
-        # the removed key genuinely disappears from desired.
-        updated_tags = {
-            "environment": "prod",
-        }
-        cr = k8s.get_resource(ref)
-        cr["spec"]["tags"] = updated_tags
-        k8s.replace_custom_resource(ref, cr)
-        condition.assert_synced(ref)
-
-        latest_tags = wait_for_user_tags(ds_arn, updated_tags)
-        tags.assert_ack_system_tags(
-            tags=latest_tags,
-        )
-        tags.assert_equal_without_ack_tags(
-            expected=updated_tags,
-            actual=latest_tags,
-        )
-        assert "team" not in latest_tags
-        assert latest_tags.get("environment") == "prod"
-
+    # One consolidated lifecycle test exercises the whole resource against a
+    # single NLB. A delivery source's resourceArn (the NLB) can back only one
+    # delivery source at a time -- PutDeliverySource rejects a second source on
+    # the same ResourceId with ConflictException. The suite runs tests in
+    # parallel (pytest -n), so separate test methods each creating a source on
+    # the one bootstrapped NLB collided across workers and flaked with
+    # Synced=Unknown. Driving create -> tag update/remove -> delete in a single
+    # sequential test keeps exactly one source on the NLB at any moment while
+    # still covering every path.
     @pytest.mark.resource_data({
         "resource_file": "delivery_source_with_tags",
         "replacements": {
@@ -201,37 +129,65 @@ class TestDeliverySource:
             "TAG_VALUE_2": "observability",
         },
     })
-    def test_create_with_tags(self, _delivery_source):
+    def test_crud_and_tags(self, _delivery_source):
         (ref, cr) = _delivery_source
         ds_name = ref.name
 
-        # PutDeliverySource accepts tags ONLY at create, so sdkCreate passes
-        # spec.tags inline on the create call and then requeues (its
-        # `if ko.Spec.Tags != nil { SetSynced(False) }` branch) to reconcile
-        # the ACK system tags. Creating with tags set exercises that inline
-        # path and the requeue, which the patch-after-create test_tags does
-        # not cover.
+        # --- Create (with tags inline) -------------------------------------
+        # PutDeliverySource accepts tags only at create and persists them, so
+        # the create payload carries spec.tags inline. Verify the resource
+        # syncs, exists in AWS with the expected identity, and has its status
+        # populated.
         time.sleep(CREATE_WAIT_AFTER_SECONDS)
         condition.assert_synced(ref)
 
+        aws_ds = delivery_source.get(ds_name)
+        assert aws_ds is not None
+        assert aws_ds["name"] == ds_name
+        assert aws_ds["logType"] == "NLB_ACCESS_LOGS"
+
         cr = k8s.get_resource(ref)
+        assert cr["status"].get("ackResourceMetadata", {}).get("arn") is not None
+        assert cr["status"].get("service") is not None
         ds_arn = cr["status"]["ackResourceMetadata"]["arn"]
 
-        expected_tags = {
+        # The user tags supplied at create AND the ACK default controller tags
+        # (services.k8s.aws/*) must both be present. Tags are reconciled out of
+        # band via rm.syncTags, so poll until the user tags converge rather than
+        # reading once after a fixed sleep.
+        create_tags = {
             "environment": "dev",
             "team": "observability",
         }
-
-        # Tags set at create are reconciled (the inline create tags plus the
-        # ACK system tags via the requeue) out of band, so poll until the user
-        # tags converge before asserting rather than reading once.
-        latest_tags = wait_for_user_tags(ds_arn, expected_tags)
-        # Both the user tags supplied at create AND the ACK default controller
-        # tags (services.k8s.aws/*) must be present on the delivery source.
-        tags.assert_ack_system_tags(
-            tags=latest_tags,
-        )
+        latest_tags = wait_for_user_tags(ds_arn, create_tags)
+        tags.assert_ack_system_tags(tags=latest_tags)
         tags.assert_equal_without_ack_tags(
-            expected=expected_tags,
+            expected=create_tags,
             actual=latest_tags,
         )
+
+        # --- Update tags (change one value, remove one key) ----------------
+        # A merge patch leaves omitted map keys untouched, so to actually drop
+        # the "team" key the resource is fully replaced with spec.tags set to
+        # exactly the new map. This exercises both the standalone TagResource
+        # (value change) and UntagResource (key removal) paths of rm.syncTags.
+        updated_tags = {
+            "environment": "prod",
+        }
+        cr = k8s.get_resource(ref)
+        cr["spec"]["tags"] = updated_tags
+        k8s.replace_custom_resource(ref, cr)
+        condition.assert_synced(ref)
+
+        latest_tags = wait_for_user_tags(ds_arn, updated_tags)
+        tags.assert_ack_system_tags(tags=latest_tags)
+        tags.assert_equal_without_ack_tags(
+            expected=updated_tags,
+            actual=latest_tags,
+        )
+        assert "team" not in latest_tags
+        assert latest_tags.get("environment") == "prod"
+
+        # --- Delete --------------------------------------------------------
+        # Handled by the fixture teardown, which asserts the resource is gone
+        # from both the cluster and the CloudWatch Logs API.
