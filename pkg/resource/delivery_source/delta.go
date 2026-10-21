@@ -62,12 +62,10 @@ func newResourceDelta(
 			delta.Add("Spec.ResourceARN", a.ko.Spec.ResourceARN, b.ko.Spec.ResourceARN)
 		}
 	}
-	if len(a.ko.Spec.Tags) != len(b.ko.Spec.Tags) {
+	desiredACKTags, _ := convertToOrderedACKTags(a.ko.Spec.Tags)
+	latestACKTags, _ := convertToOrderedACKTags(b.ko.Spec.Tags)
+	if !ackcompare.MapStringStringEqual(desiredACKTags, latestACKTags) {
 		delta.Add("Spec.Tags", a.ko.Spec.Tags, b.ko.Spec.Tags)
-	} else if len(a.ko.Spec.Tags) > 0 {
-		if !ackcompare.MapStringStringPEqual(a.ko.Spec.Tags, b.ko.Spec.Tags) {
-			delta.Add("Spec.Tags", a.ko.Spec.Tags, b.ko.Spec.Tags)
-		}
 	}
 
 	return delta

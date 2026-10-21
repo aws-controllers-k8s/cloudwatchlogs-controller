@@ -123,6 +123,26 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
+	// PutDeliverySource takes a single ResourceArn on input but GetDeliverySource
+	// returns it inside the ResourceArns array. The generated mapping only
+	// populates Status.ResourceARNs, leaving Spec.ResourceARN nil after a read,
+	// so delta.go sees a permanent desired(set)-vs-latest(nil) diff and calls
+	// PutDeliverySource on every reconcile. Mirror the first returned ARN back
+	// into Spec.ResourceARN.
+	if resp.DeliverySource != nil && len(resp.DeliverySource.ResourceArns) > 0 {
+		ko.Spec.ResourceARN = &resp.DeliverySource.ResourceArns[0]
+	}
+	// GetDeliverySource never returns a tags field, so the generated mapping
+	// would leave Spec.Tags nil and produce a permanent Spec.Tags delta against
+	// any desired tags. Read the live tags from the standalone
+	// ListTagsForResource API (the same source rm.syncTags reconciles toward).
+	if ko.Status.ACKResourceMetadata != nil && ko.Status.ACKResourceMetadata.ARN != nil {
+		ko.Spec.Tags, err = getTags(ctx, rm.sdkapi, rm.metrics, string(*ko.Status.ACKResourceMetadata.ARN))
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &resource{ko}, nil
 }
 
@@ -205,13 +225,21 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.Service = nil
 	}
-	if resp.DeliverySource.Tags != nil {
-		ko.Spec.Tags = aws.StringMap(resp.DeliverySource.Tags)
-	} else {
-		ko.Spec.Tags = nil
-	}
 
 	rm.setStatusDefaults(ko)
+	// The resource now exists in AWS and ko carries its identifiers. Mark any
+	// error from here on as a post-create failure so the reconciler retains the
+	// ACK finalizer, and return ko so those identifiers reach the CR status and
+	// the next reconciliation finds the resource instead of creating a second
+	// one. See https://github.com/aws-controllers-k8s/community/issues/2849.
+	defer func() {
+		if err != nil {
+			err = ackerr.WrapPostCreateError(err)
+			if created == nil {
+				created = &resource{ko}
+			}
+		}
+	}()
 	return &resource{ko}, nil
 }
 
@@ -252,10 +280,39 @@ func (rm *resourceManager) sdkUpdate(
 	defer func() {
 		exit(err)
 	}()
+	// Tags are reconciled out of band through the standalone Tag API, not
+	// through PutDeliverySource (which rejects tags on update with
+	// ConflictException). custom_sync would wire this automatically but also
+	// emits an unconditional post-create requeue this resource does not want,
+	// so the update-path tag sync is wired here instead.
+	if delta.DifferentAt("Spec.Tags") {
+		if err = rm.syncTags(ctx, desired, latest); err != nil {
+			return nil, err
+		}
+	}
+	// When Spec.Tags is the ONLY field that differs, syncTags has already
+	// applied the change and there is nothing left for PutDeliverySource to do
+	// (and issuing it would risk resending tags). Return the desired state with
+	// the latest status merged in, mirroring the generated update's success
+	// path, without calling PutDeliverySource.
+	if !delta.DifferentExcept("Spec.Tags") {
+		updatedDesired := desired.DeepCopy()
+		updatedDesired.SetStatus(latest)
+		return rm.concreteResource(updatedDesired), nil
+	}
+
 	input, err := rm.newUpdateRequestPayload(ctx, desired, delta)
 	if err != nil {
 		return nil, err
 	}
+	// PutDeliverySource rejects an update that carries tags with
+	// ConflictException ("Tags can only be provided when a resource is being
+	// created, not updated."). Tags are reconciled out of band by rm.syncTags
+	// (custom_sync on the Tags field), so strip them from the update payload.
+	// This guards the case where a non-tag field changes alongside tags: the
+	// generated sdkUpdate still falls through to PutDeliverySource, and without
+	// this the generated newUpdateRequestPayload would resend Spec.Tags.
+	input.Tags = nil
 
 	var resp *svcsdk.PutDeliverySourceOutput
 	_ = resp

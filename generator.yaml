@@ -78,8 +78,30 @@ resources:
       Name:
         is_primary_key: true
         is_immutable: true
-    tags:
-      ignore: true
+      Tags:
+        set:
+          - method: Create
+            ignore: from
+    hooks:
+      # GetDeliverySource never returns a ResourceArns value in Spec; the
+      # generated read maps it only to Status.ResourceARNs, leaving
+      # Spec.ResourceARN nil. delta.go then reports a permanent
+      # Spec.ResourceARN diff and calls PutDeliverySource on every reconcile.
+      # This hook mirrors the first returned ARN back into Spec.ResourceARN.
+      sdk_read_one_post_set_output:
+        template_path: hooks/delivery_source/sdk_read_one_post_set_output.go.tpl
+      # Reconcile tag drift via the standalone Tag API before building the
+      # PutDeliverySource update payload: when Spec.Tags differs, call
+      # rm.syncTags, and when tags are the ONLY diff, return early so the Put
+      # (which rejects tags on update) is never issued.
+      sdk_update_pre_build_request:
+        template_path: hooks/delivery_source/sdk_update_pre_build_request.go.tpl
+      # Strip Tags from the PutDeliverySource update payload so a mixed update
+      # (a non-tag field changing alongside tags) does not resend tags and trip
+      # ConflictException. Tag drift itself is reconciled by rm.syncTags, wired
+      # in via sdk_update_pre_build_request above.
+      sdk_update_post_build_request:
+        template_path: hooks/delivery_source/sdk_update_post_build_request.go.tpl
   LogGroup:
     exceptions:
       terminal_codes:

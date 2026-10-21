@@ -31,7 +31,19 @@ def get(name: str):
         return resp.get("deliverySource")
     except cwl.exceptions.ResourceNotFoundException:
         return None
-    except Exception:
+
+
+def get_tags(delivery_source_arn: str):
+    """Returns the tags on a delivery source via the standalone
+    ListTagsForResource API (GetDeliverySource does not return tags).
+
+    Returns None if the delivery source does not exist.
+    """
+    cwl = boto3.client("logs")
+    try:
+        resp = cwl.list_tags_for_resource(resourceArn=delivery_source_arn)
+        return resp["tags"]
+    except cwl.exceptions.ResourceNotFoundException:
         return None
 
 
