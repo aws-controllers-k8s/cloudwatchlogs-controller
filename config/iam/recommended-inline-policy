@@ -15,7 +15,10 @@
                 "logs:ListTagsForResource",
                 "logs:DescribeSubscriptionFilters",
                 "logs:DeleteRetentionPolicy",
-                "logs:PutRetentionPolicy"
+                "logs:PutRetentionPolicy",
+                "logs:PutDeliverySource",
+                "logs:GetDeliverySource",
+                "logs:DeleteDeliverySource"
             ],
             "Resource": "*"
         }

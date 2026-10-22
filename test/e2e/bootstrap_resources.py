@@ -15,13 +15,14 @@
 for them.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from acktest.bootstrapping import Resources
+from acktest.bootstrapping.elbv2 import NetworkLoadBalancer
 from e2e import bootstrap_directory
 
 @dataclass
 class BootstrapResources(Resources):
-    pass
+    DeliverySourceNLB: NetworkLoadBalancer = field(default=None)
 
 _bootstrap_resources = None
 

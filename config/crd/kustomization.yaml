@@ -2,5 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - common
+  - bases/cloudwatchlogs.services.k8s.aws_deliverysources.yaml
   - bases/cloudwatchlogs.services.k8s.aws_loggroups.yaml
   - bases/cloudwatchlogs.services.k8s.aws_resourcepolicies.yaml
