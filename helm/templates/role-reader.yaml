@@ -16,6 +16,7 @@ rules:
 - apiGroups:
   - cloudwatchlogs.services.k8s.aws
   resources:
+  - deliverydestinations
   - deliverysources
   - loggroups
   - resourcepolicies

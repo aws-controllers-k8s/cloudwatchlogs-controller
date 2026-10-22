@@ -47,8 +47,9 @@ type AnomalyDetector struct {
 // settings that you can use to configure a delivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_Delivery.html)
 // or a delivery destination (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_DeliveryDestination.html).
 type ConfigurationTemplate struct {
-	LogType *string `json:"logType,omitempty"`
-	Service *string `json:"service,omitempty"`
+	DeliveryDestinationType *string `json:"deliveryDestinationType,omitempty"`
+	LogType                 *string `json:"logType,omitempty"`
+	Service                 *string `json:"service,omitempty"`
 }
 
 // This structure contains information about one delivery in your account.
@@ -61,10 +62,16 @@ type ConfigurationTemplate struct {
 // To update an existing delivery configuration, use UpdateDeliveryConfiguration
 // (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_UpdateDeliveryConfiguration.html).
 type Delivery struct {
-	ARN                    *string            `json:"arn,omitempty"`
-	DeliveryDestinationARN *string            `json:"deliveryDestinationARN,omitempty"`
-	DeliverySourceName     *string            `json:"deliverySourceName,omitempty"`
-	Tags                   map[string]*string `json:"tags,omitempty"`
+	ARN                     *string            `json:"arn,omitempty"`
+	DeliveryDestinationARN  *string            `json:"deliveryDestinationARN,omitempty"`
+	DeliveryDestinationType *string            `json:"deliveryDestinationType,omitempty"`
+	DeliverySourceName      *string            `json:"deliverySourceName,omitempty"`
+	Tags                    map[string]*string `json:"tags,omitempty"`
+}
+
+// A structure that contains information about one logs delivery destination.
+type DeliveryDestinationConfiguration struct {
+	DestinationResourceARN *string `json:"destinationResourceARN,omitempty"`
 }
 
 // This structure contains information about one delivery destination in your
@@ -94,14 +101,14 @@ type Delivery struct {
 // by creating multiple deliveries. You can also create multiple deliveries
 // to configure multiple delivery sources to send logs to the same delivery
 // destination.
-type DeliveryDestination struct {
-	ARN  *string            `json:"arn,omitempty"`
-	Tags map[string]*string `json:"tags,omitempty"`
-}
-
-// A structure that contains information about one logs delivery destination.
-type DeliveryDestinationConfiguration struct {
-	DestinationResourceARN *string `json:"destinationResourceARN,omitempty"`
+type DeliveryDestination_SDK struct {
+	ARN *string `json:"arn,omitempty"`
+	// A structure that contains information about one logs delivery destination.
+	DeliveryDestinationConfiguration *DeliveryDestinationConfiguration `json:"deliveryDestinationConfiguration,omitempty"`
+	DeliveryDestinationType          *string                           `json:"deliveryDestinationType,omitempty"`
+	Name                             *string                           `json:"name,omitempty"`
+	OutputFormat                     *string                           `json:"outputFormat,omitempty"`
+	Tags                             map[string]*string                `json:"tags,omitempty"`
 }
 
 // This structure contains information about one delivery source in your account.
