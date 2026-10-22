@@ -82,6 +82,8 @@ resources:
         set:
           - method: Create
             ignore: from
+          - method: Update
+            ignore: all
     hooks:
       # GetDeliverySource never returns a ResourceArns value in Spec; the
       # generated read maps it only to Status.ResourceARNs, leaving
@@ -96,12 +98,6 @@ resources:
       # (which rejects tags on update) is never issued.
       sdk_update_pre_build_request:
         template_path: hooks/delivery_source/sdk_update_pre_build_request.go.tpl
-      # Strip Tags from the PutDeliverySource update payload so a mixed update
-      # (a non-tag field changing alongside tags) does not resend tags and trip
-      # ConflictException. Tag drift itself is reconciled by rm.syncTags, wired
-      # in via sdk_update_pre_build_request above.
-      sdk_update_post_build_request:
-        template_path: hooks/delivery_source/sdk_update_post_build_request.go.tpl
   LogGroup:
     exceptions:
       terminal_codes:

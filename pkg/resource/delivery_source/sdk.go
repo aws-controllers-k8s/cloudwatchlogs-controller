@@ -305,14 +305,6 @@ func (rm *resourceManager) sdkUpdate(
 	if err != nil {
 		return nil, err
 	}
-	// PutDeliverySource rejects an update that carries tags with
-	// ConflictException ("Tags can only be provided when a resource is being
-	// created, not updated."). Tags are reconciled out of band by rm.syncTags
-	// (custom_sync on the Tags field), so strip them from the update payload.
-	// This guards the case where a non-tag field changes alongside tags: the
-	// generated sdkUpdate still falls through to PutDeliverySource, and without
-	// this the generated newUpdateRequestPayload would resend Spec.Tags.
-	input.Tags = nil
 
 	var resp *svcsdk.PutDeliverySourceOutput
 	_ = resp
@@ -352,11 +344,6 @@ func (rm *resourceManager) sdkUpdate(
 	} else {
 		ko.Status.Service = nil
 	}
-	if resp.DeliverySource.Tags != nil {
-		ko.Spec.Tags = aws.StringMap(resp.DeliverySource.Tags)
-	} else {
-		ko.Spec.Tags = nil
-	}
 
 	rm.setStatusDefaults(ko)
 	return &resource{ko}, nil
@@ -379,9 +366,6 @@ func (rm *resourceManager) newUpdateRequestPayload(
 	}
 	if r.ko.Spec.ResourceARN != nil {
 		res.ResourceArn = r.ko.Spec.ResourceARN
-	}
-	if r.ko.Spec.Tags != nil {
-		res.Tags = aws.ToStringMap(r.ko.Spec.Tags)
 	}
 
 	return res, nil

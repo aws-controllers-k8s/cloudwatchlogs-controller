@@ -68,7 +68,7 @@ def _delivery_source(request):
 
     ds_name = random_suffix_name("ack-test-ds", 30)
 
-    resource_file = "delivery_source"
+    resource_file = "delivery_source_with_tags"
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements["DELIVERY_SOURCE_NAME"] = ds_name

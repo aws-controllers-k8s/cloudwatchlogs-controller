@@ -33,14 +33,12 @@ var getTags = sync.GetResourceTags
 // when Spec.Tags is the only field that differs the hook then short-circuits
 // before PutDeliverySource, which rejects tags on update with ConflictException.
 //
-// The add/remove diff is computed against the LIVE tags read from AWS via
-// getTags (ListTagsForResource), not against latest.ko.Spec.Tags. latest is
-// the reconciler's view, and PutDeliverySource/GetDeliverySource never return
-// tags, so Spec.Tags reflects live state only on the sdkFind path. On the
-// create/update path it can be nil or already equal to desired (EnsureTags
-// merges the controller default tags into desired before the delta is taken),
-// which nets added/removed to empty and silently no-ops. Reading live tags
-// here makes the diff authoritative regardless of which path invoked syncTags.
+// The add/remove diff is computed against latest.ko.Spec.Tags. syncTags has a
+// single call site -- the generated sdkUpdate -- where latest is the sdkFind
+// result, and the sdk_read_one_post_set_output hook populates
+// latest.ko.Spec.Tags from the live tags (ListTagsForResource) read during
+// that find. latest therefore already carries the authoritative current tags,
+// so no fresh ListTagsForResource call is needed here.
 func (rm *resourceManager) syncTags(
 	ctx context.Context,
 	desired *resource,
@@ -51,17 +49,13 @@ func (rm *resourceManager) syncTags(
 	defer func() { exit(err) }()
 
 	arn := string(*latest.ko.Status.ACKResourceMetadata.ARN)
-	currentTags, err := getTags(ctx, rm.sdkapi, rm.metrics, arn)
-	if err != nil {
-		return err
-	}
 	return sync.SyncResourceTags(
 		ctx,
 		rm.sdkapi,
 		rm.metrics,
 		arn,
 		desired.ko.Spec.Tags,
-		currentTags,
+		latest.ko.Spec.Tags,
 		convertToOrderedACKTags,
 	)
 }
