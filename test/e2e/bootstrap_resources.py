@@ -24,6 +24,10 @@ from e2e import bootstrap_directory
 @dataclass
 class BootstrapResources(Resources):
     DeliverySourceNLB: NetworkLoadBalancer = field(default=None)
+    # A second NLB exclusively for the Delivery test's boto3 prerequisites so
+    # the DeliverySource ACK-CR test and the Delivery test never fight over the
+    # same NLB ResourceId when running in parallel (pytest-xdist).
+    DeliveryNLB: NetworkLoadBalancer = field(default=None)
     DeliveryDestinationLogGroup: LogGroup = field(default=None)
     DeliveryDestinationLogGroup2: LogGroup = field(default=None)
 

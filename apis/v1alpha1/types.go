@@ -33,6 +33,17 @@ type AccountPolicy struct {
 	PolicyName      *string `json:"policyName,omitempty"`
 }
 
+// This structure represents one anomaly that has been found by a logs anomaly
+// detector.
+//
+// For more information about patterns and anomalies, see CreateLogAnomalyDetector
+// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateLogAnomalyDetector.html).
+type Anomaly struct {
+	Active                    *bool `json:"active,omitempty"`
+	IsPatternLevelSuppression *bool `json:"isPatternLevelSuppression,omitempty"`
+	Suppressed                *bool `json:"suppressed,omitempty"`
+}
+
 // Contains information about one anomaly detector in the account.
 type AnomalyDetector struct {
 	// A symbolic description of how CloudWatch Logs should interpret the data in
@@ -47,26 +58,22 @@ type AnomalyDetector struct {
 // settings that you can use to configure a delivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_Delivery.html)
 // or a delivery destination (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_DeliveryDestination.html).
 type ConfigurationTemplate struct {
-	DeliveryDestinationType *string `json:"deliveryDestinationType,omitempty"`
-	LogType                 *string `json:"logType,omitempty"`
-	Service                 *string `json:"service,omitempty"`
+	AllowedSuffixPathFields []*string `json:"allowedSuffixPathFields,omitempty"`
+	DeliveryDestinationType *string   `json:"deliveryDestinationType,omitempty"`
+	LogType                 *string   `json:"logType,omitempty"`
+	Service                 *string   `json:"service,omitempty"`
 }
 
-// This structure contains information about one delivery in your account.
-//
-// A delivery is a connection between a logical delivery source and a logical
-// delivery destination.
-//
-// For more information, see CreateDelivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateDelivery.html).
-//
-// To update an existing delivery configuration, use UpdateDeliveryConfiguration
-// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_UpdateDeliveryConfiguration.html).
-type Delivery struct {
-	ARN                     *string            `json:"arn,omitempty"`
-	DeliveryDestinationARN  *string            `json:"deliveryDestinationARN,omitempty"`
-	DeliveryDestinationType *string            `json:"deliveryDestinationType,omitempty"`
-	DeliverySourceName      *string            `json:"deliverySourceName,omitempty"`
-	Tags                    map[string]*string `json:"tags,omitempty"`
+// This structure contains the default values that are used for each configuration
+// parameter when you use CreateDelivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateDelivery.html)
+// to create a deliver under the current service type, resource type, and log
+// type.
+type ConfigurationTemplateDeliveryConfigValues struct {
+	FieldDelimiter *string   `json:"fieldDelimiter,omitempty"`
+	RecordFields   []*string `json:"recordFields,omitempty"`
+	// This structure contains delivery configurations that apply only when the
+	// delivery destination resource is an S3 bucket.
+	S3DeliveryConfiguration *S3DeliveryConfiguration `json:"s3DeliveryConfiguration,omitempty"`
 }
 
 // A structure that contains information about one logs delivery destination.
@@ -150,6 +157,29 @@ type DeliverySource_SDK struct {
 	ResourceARNs []*string          `json:"resourceARNs,omitempty"`
 	Service      *string            `json:"service,omitempty"`
 	Tags         map[string]*string `json:"tags,omitempty"`
+}
+
+// This structure contains information about one delivery in your account.
+//
+// A delivery is a connection between a logical delivery source and a logical
+// delivery destination.
+//
+// For more information, see CreateDelivery (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateDelivery.html).
+//
+// To update an existing delivery configuration, use UpdateDeliveryConfiguration
+// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_UpdateDeliveryConfiguration.html).
+type Delivery_SDK struct {
+	ARN                     *string   `json:"arn,omitempty"`
+	DeliveryDestinationARN  *string   `json:"deliveryDestinationARN,omitempty"`
+	DeliveryDestinationType *string   `json:"deliveryDestinationType,omitempty"`
+	DeliverySourceName      *string   `json:"deliverySourceName,omitempty"`
+	FieldDelimiter          *string   `json:"fieldDelimiter,omitempty"`
+	ID                      *string   `json:"id,omitempty"`
+	RecordFields            []*string `json:"recordFields,omitempty"`
+	// This structure contains delivery configurations that apply only when the
+	// delivery destination resource is an S3 bucket.
+	S3DeliveryConfiguration *S3DeliveryConfiguration `json:"s3DeliveryConfiguration,omitempty"`
+	Tags                    map[string]*string       `json:"tags,omitempty"`
 }
 
 // Represents a cross-account destination that receives subscription log events.
@@ -331,6 +361,15 @@ type OutputLogEvent struct {
 	Timestamp     *int64 `json:"timestamp,omitempty"`
 }
 
+// A structure that contains information about one pattern token related to
+// an anomaly.
+//
+// For more information about patterns and tokens, see CreateLogAnomalyDetector
+// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateLogAnomalyDetector.html).
+type PatternToken struct {
+	IsDynamic *bool `json:"isDynamic,omitempty"`
+}
+
 type PutSubscriptionFilterInput struct {
 	DestinationARN *string `json:"destinationARN,omitempty"`
 	// The method used to distribute log data to the destination, which can be either
@@ -358,6 +397,13 @@ type QueryInfo struct {
 	LogGroupName *string `json:"logGroupName,omitempty"`
 }
 
+// A structure that represents a valid record field header and whether it is
+// mandatory.
+type RecordField struct {
+	Mandatory *bool   `json:"mandatory,omitempty"`
+	Name      *string `json:"name,omitempty"`
+}
+
 // A policy enabling one or more entities to put logs to a log group in this
 // account.
 type ResourcePolicy_SDK struct {
@@ -375,6 +421,13 @@ type S3Configuration struct {
 	KMSKeyID       *string `json:"kmsKeyID,omitempty"`
 	OwnerAccountID *string `json:"ownerAccountID,omitempty"`
 	RoleARN        *string `json:"roleARN,omitempty"`
+}
+
+// This structure contains delivery configurations that apply only when the
+// delivery destination resource is an S3 bucket.
+type S3DeliveryConfiguration struct {
+	EnableHiveCompatiblePath *bool   `json:"enableHiveCompatiblePath,omitempty"`
+	SuffixPath               *string `json:"suffixPath,omitempty"`
 }
 
 // Represents a data source association with an S3 Table Integration, including

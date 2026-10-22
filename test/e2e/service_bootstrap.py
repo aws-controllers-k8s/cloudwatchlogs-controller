@@ -31,6 +31,17 @@ def service_bootstrap() -> Resources:
             num_public_subnet=0,
             num_private_subnet=2,
         ),
+        # Separate NLB for the Delivery test prerequisites (boto3-managed
+        # delivery source). An NLB ResourceId can only back one delivery source
+        # at a time, so the DeliverySource ACK-CR test and the Delivery test
+        # must each have their own NLB to avoid ConflictException when running
+        # in parallel.
+        DeliveryNLB=NetworkLoadBalancer(
+            name_prefix="ack-cwl-dlvr",
+            scheme="internal",
+            num_public_subnet=0,
+            num_private_subnet=2,
+        ),
         DeliveryDestinationLogGroup=LogGroup(
             name_prefix="ack-cwl-dd",
         ),
