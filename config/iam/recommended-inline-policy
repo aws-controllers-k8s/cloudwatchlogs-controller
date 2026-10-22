@@ -18,7 +18,11 @@
                 "logs:PutRetentionPolicy",
                 "logs:PutDeliverySource",
                 "logs:GetDeliverySource",
-                "logs:DeleteDeliverySource"
+                "logs:DeleteDeliverySource",
+                "logs:PutDeliveryDestination",
+                "logs:GetDeliveryDestination",
+                "logs:DeleteDeliveryDestination",
+                "logs:DescribeDeliveryDestinations"
             ],
             "Resource": "*"
         }

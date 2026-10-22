@@ -15,6 +15,7 @@
 import logging
 
 from acktest.bootstrapping import Resources, BootstrapFailureException
+from acktest.bootstrapping.cloudwatch import LogGroup
 from acktest.bootstrapping.elbv2 import NetworkLoadBalancer
 
 from e2e import bootstrap_directory
@@ -29,6 +30,9 @@ def service_bootstrap() -> Resources:
             scheme="internal",
             num_public_subnet=0,
             num_private_subnet=2,
+        ),
+        DeliveryDestinationLogGroup=LogGroup(
+            name_prefix="ack-cwl-dd",
         ),
     )
 

@@ -17,12 +17,14 @@ for them.
 
 from dataclasses import dataclass, field
 from acktest.bootstrapping import Resources
+from acktest.bootstrapping.cloudwatch import LogGroup
 from acktest.bootstrapping.elbv2 import NetworkLoadBalancer
 from e2e import bootstrap_directory
 
 @dataclass
 class BootstrapResources(Resources):
     DeliverySourceNLB: NetworkLoadBalancer = field(default=None)
+    DeliveryDestinationLogGroup: LogGroup = field(default=None)
 
 _bootstrap_resources = None
 
