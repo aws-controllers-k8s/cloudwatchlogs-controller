@@ -34,6 +34,9 @@ def service_bootstrap() -> Resources:
         DeliveryDestinationLogGroup=LogGroup(
             name_prefix="ack-cwl-dd",
         ),
+        DeliveryDestinationLogGroup2=LogGroup(
+            name_prefix="ack-cwl-dd2",
+        ),
     )
 
     try:

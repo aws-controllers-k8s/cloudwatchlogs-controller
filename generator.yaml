@@ -125,6 +125,8 @@ resources:
             ignore: from
           - method: Update
             ignore: all
+          - method: ReadOne
+            ignore: from
     hooks:
       # GetDeliveryDestination may not reliably populate the Tags field in the
       # DeliveryDestination wrapper. Read the live tags from the standalone

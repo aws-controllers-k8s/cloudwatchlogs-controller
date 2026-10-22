@@ -121,11 +121,6 @@ func (rm *resourceManager) sdkFind(
 	} else {
 		ko.Spec.OutputFormat = nil
 	}
-	if resp.DeliveryDestination.Tags != nil {
-		ko.Spec.Tags = aws.StringMap(resp.DeliveryDestination.Tags)
-	} else {
-		ko.Spec.Tags = nil
-	}
 
 	rm.setStatusDefaults(ko)
 	// GetDeliveryDestination may not reliably populate the Tags field in the

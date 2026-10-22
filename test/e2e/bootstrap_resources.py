@@ -25,6 +25,7 @@ from e2e import bootstrap_directory
 class BootstrapResources(Resources):
     DeliverySourceNLB: NetworkLoadBalancer = field(default=None)
     DeliveryDestinationLogGroup: LogGroup = field(default=None)
+    DeliveryDestinationLogGroup2: LogGroup = field(default=None)
 
 _bootstrap_resources = None
 

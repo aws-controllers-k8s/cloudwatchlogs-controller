@@ -181,6 +181,34 @@ class TestDeliveryDestination:
         assert "team" not in latest_tags
         assert latest_tags.get("environment") == "prod"
 
+        # --- Update destinationResourceARN (mutable field) -----------------
+        # name / outputFormat / deliveryDestinationType are immutable, but
+        # deliveryDestinationConfiguration.destinationResourceArn is mutable and
+        # resolves in a single sdkUpdate. Point the destination at a second log
+        # group and confirm the live API reflects the new ARN while the
+        # immutable deliveryDestinationType is unchanged.
+        bootstrap = get_bootstrap_resources()
+        log_group_arn_2 = bootstrap.DeliveryDestinationLogGroup2.arn
+        if log_group_arn_2.endswith(":*"):
+            log_group_arn_2 = log_group_arn_2[:-len(":*")]
+
+        # Full-replace the CR (merge patch would leave the nested config
+        # untouched) with the new destination ARN.
+        cr = k8s.get_resource(ref)
+        cr["spec"]["deliveryDestinationConfiguration"]["destinationResourceARN"] = log_group_arn_2
+        k8s.replace_custom_resource(ref, cr)
+
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        condition.assert_synced(ref)
+
+        aws_dd = delivery_destination.get(dd_name)
+        assert aws_dd is not None
+        assert aws_dd["deliveryDestinationConfiguration"]["destinationResourceArn"] == log_group_arn_2
+
+        # deliveryDestinationType is immutable and must survive the update.
+        cr = k8s.get_resource(ref)
+        assert cr["spec"]["deliveryDestinationType"] == "CWL"
+
         # --- Delete --------------------------------------------------------
         # Handled by the fixture teardown, which asserts the resource is gone
         # from both the cluster and the CloudWatch Logs API.
