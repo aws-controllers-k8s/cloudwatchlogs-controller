@@ -4,7 +4,6 @@ sdk_names:
   client_struct: CloudWatchLogs
 ignore:
   resource_names:
-    - Delivery
     - ExportTask
     - ImportTask
     - ScheduledQuery
@@ -56,6 +55,14 @@ operations:
     # generated requiredFieldsMissingFromReadManyInput so it treats the read
     # input as incomplete (and sdkFind returns NotFound) unless at least one of
     # PolicyName or ResourceARN is set, instead of matching an arbitrary policy.
+  CreateDelivery:
+    output_wrapper_field_path: Delivery
+  GetDelivery:
+    output_wrapper_field_path: Delivery
+  UpdateDeliveryConfiguration:
+    resource_name: Delivery
+    operation_type:
+      - Update
   PutDeliverySource:
     resource_name: DeliverySource
     # PutDeliverySource is an idempotent upsert: it creates a new delivery
@@ -77,6 +84,40 @@ operations:
       - Update
     output_wrapper_field_path: DeliveryDestination
 resources:
+  Delivery:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - ValidationException
+    fields:
+      Id:
+        is_primary_key: true
+        is_immutable: true
+      DeliverySourceName:
+        is_immutable: true
+        references:
+          resource: DeliverySource
+          path: Spec.Name
+      DeliveryDestinationArn:
+        is_immutable: true
+        references:
+          resource: DeliveryDestination
+          path: Status.ACKResourceMetadata.ARN
+      Tags:
+        set:
+          - method: Create
+            ignore: from
+          - method: Update
+            ignore: all
+          - method: ReadOne
+            ignore: from
+    hooks:
+      sdk_read_one_post_set_output:
+        template_path: hooks/delivery/sdk_read_one_post_set_output.go.tpl
+      sdk_update_pre_build_request:
+        template_path: hooks/delivery/sdk_update_pre_build_request.go.tpl
   DeliverySource:
     exceptions:
       errors:

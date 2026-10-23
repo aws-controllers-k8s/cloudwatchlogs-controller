@@ -22,7 +22,11 @@
                 "logs:PutDeliveryDestination",
                 "logs:GetDeliveryDestination",
                 "logs:DeleteDeliveryDestination",
-                "logs:DescribeDeliveryDestinations"
+                "logs:DescribeDeliveryDestinations",
+                "logs:CreateDelivery",
+                "logs:GetDelivery",
+                "logs:UpdateDeliveryConfiguration",
+                "logs:DeleteDelivery"
             ],
             "Resource": "*"
         }

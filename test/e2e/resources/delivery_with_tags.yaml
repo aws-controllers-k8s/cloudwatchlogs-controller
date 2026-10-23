@@ -1,0 +1,10 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: Delivery
+metadata:
+  name: $DELIVERY_NAME
+spec:
+  deliverySourceName: $DELIVERY_SOURCE_NAME
+  deliveryDestinationARN: $DELIVERY_DESTINATION_ARN
+  tags:
+    $TAG_KEY_1: $TAG_VALUE_1
+    $TAG_KEY_2: $TAG_VALUE_2
