@@ -1,0 +1,8 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: Delivery
+metadata:
+  name: $DELIVERY_NAME
+spec:
+  deliverySourceName: $DELIVERY_SOURCE_NAME
+  deliveryDestinationARN: $DELIVERY_DESTINATION_ARN
+  fieldDelimiter: "$FIELD_DELIMITER"

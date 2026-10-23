@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from acktest.bootstrapping import Resources
 from acktest.bootstrapping.cloudwatch import LogGroup
 from acktest.bootstrapping.elbv2 import NetworkLoadBalancer
+from acktest.bootstrapping.s3 import Bucket
 from e2e import bootstrap_directory
 
 @dataclass
@@ -30,6 +31,10 @@ class BootstrapResources(Resources):
     DeliveryNLB: NetworkLoadBalancer = field(default=None)
     DeliveryDestinationLogGroup: LogGroup = field(default=None)
     DeliveryDestinationLogGroup2: LogGroup = field(default=None)
+    # Dedicated NLB + S3 bucket for the S3-destination Delivery update-path
+    # test (suffixPath is only mutable on an S3-destination delivery).
+    DeliveryS3NLB: NetworkLoadBalancer = field(default=None)
+    DeliveryS3Bucket: Bucket = field(default=None)
 
 _bootstrap_resources = None
 
