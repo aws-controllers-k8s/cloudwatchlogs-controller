@@ -1,0 +1,19 @@
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliveryDestinationPolicy
+metadata:
+  name: $DELIVERY_DESTINATION_POLICY_NAME
+spec:
+  deliveryDestinationRef:
+    from:
+      name: $DELIVERY_DESTINATION_CR_NAME
+  policy: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [{
+        "Sid": "AllowLogDeliveryActions",
+        "Effect": "Allow",
+        "Principal": {"AWS": "arn:aws:iam::$AWS_ACCOUNT_ID:root"},
+        "Action": "logs:CreateDelivery",
+        "Resource": "$DELIVERY_DESTINATION_ARN"
+      }]
+    }
