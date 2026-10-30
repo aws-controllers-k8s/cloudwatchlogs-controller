@@ -83,6 +83,16 @@ operations:
       - Create
       - Update
     output_wrapper_field_path: DeliveryDestination
+  PutDeliveryDestinationPolicy:
+    resource_name: DeliveryDestinationPolicy
+    # PutDeliveryDestinationPolicy is an idempotent upsert that creates or
+    # fully replaces the policy attached to a delivery destination. Map it as
+    # both Create and Update so the generator emits sdkCreate and sdkUpdate
+    # from the same API call. The single-member Policy output structure is
+    # unwrapped automatically by the generator.
+    operation_type:
+      - Create
+      - Update
 resources:
   Delivery:
     exceptions:
@@ -180,6 +190,44 @@ resources:
       # (which rejects tags on update) is never issued.
       sdk_update_pre_build_request:
         template_path: hooks/delivery_destination/sdk_update_pre_build_request.go.tpl
+  DeliveryDestinationPolicy:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - ValidationException
+    fields:
+      # The policy is keyed by the name of the parent DeliveryDestination (one
+      # policy per destination). Kept as DeliveryDestinationName rather than
+      # Name since it identifies the parent, not the policy itself.
+      DeliveryDestinationName:
+        is_primary_key: true
+        is_immutable: true
+        references:
+          resource: DeliveryDestination
+          path: Spec.Name
+      Policy:
+        is_iam_policy: true
+    renames:
+      operations:
+        PutDeliveryDestinationPolicy:
+          input_fields:
+            DeliveryDestinationPolicy: Policy
+          output_fields:
+            DeliveryDestinationPolicy: Policy
+        GetDeliveryDestinationPolicy:
+          output_fields:
+            DeliveryDestinationPolicy: Policy
+    hooks:
+      sdk_read_one_pre_set_output:
+        template_path: hooks/delivery_destination_policy/sdk_read_one_pre_set_output.go.tpl
+      sdk_create_pre_set_output:
+        template_path: hooks/delivery_destination_policy/sdk_put_pre_set_output.go.tpl
+      sdk_update_pre_set_output:
+        template_path: hooks/delivery_destination_policy/sdk_put_pre_set_output.go.tpl
+    tags:
+      ignore: true
   LogGroup:
     exceptions:
       terminal_codes:

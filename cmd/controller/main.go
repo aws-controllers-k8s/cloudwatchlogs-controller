@@ -44,6 +44,7 @@ import (
 
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/delivery"
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/delivery_destination"
+	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/delivery_destination_policy"
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/delivery_source"
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/log_group"
 	_ "github.com/aws-controllers-k8s/cloudwatchlogs-controller/pkg/resource/resource_policy"

@@ -4,6 +4,7 @@ resources:
   - common
   - bases/cloudwatchlogs.services.k8s.aws_deliveries.yaml
   - bases/cloudwatchlogs.services.k8s.aws_deliverydestinations.yaml
+  - bases/cloudwatchlogs.services.k8s.aws_deliverydestinationpolicies.yaml
   - bases/cloudwatchlogs.services.k8s.aws_deliverysources.yaml
   - bases/cloudwatchlogs.services.k8s.aws_loggroups.yaml
   - bases/cloudwatchlogs.services.k8s.aws_resourcepolicies.yaml
