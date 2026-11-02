@@ -152,6 +152,7 @@ reconcile:
   resources:
     - Delivery
     - DeliveryDestination
+    - DeliveryDestinationPolicy
     - DeliverySource
     - LogGroup
     - ResourcePolicy

@@ -370,6 +370,11 @@ type PatternToken struct {
 	IsDynamic *bool `json:"isDynamic,omitempty"`
 }
 
+// A structure that contains information about one delivery destination policy.
+type Policy struct {
+	DeliveryDestinationPolicy *string `json:"deliveryDestinationPolicy,omitempty"`
+}
+
 type PutSubscriptionFilterInput struct {
 	DestinationARN *string `json:"destinationARN,omitempty"`
 	// The method used to distribute log data to the destination, which can be either
