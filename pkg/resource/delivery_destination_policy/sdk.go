@@ -94,8 +94,9 @@ func (rm *resourceManager) sdkFind(
 	// destination that exists but has no policy attached yet). Treat that as
 	// NotFound so the reconciler runs sdkCreate instead of panicking.
 	// This hook runs after the API error handling, so resp is non-nil here.
-	// TODO: confirm in E2E whether AWS returns ResourceNotFoundException or an
-	// empty body in that case, and record the result here.
+	// Confirmed: AWS returns HTTP 200 with {"policy":{}} for a destination that
+	// exists but has no policy; ResourceNotFoundException is only returned when
+	// the destination itself does not exist.
 	if resp.Policy == nil || resp.Policy.DeliveryDestinationPolicy == nil {
 		return nil, ackerr.NotFound
 	}
