@@ -278,6 +278,8 @@ resources:
         DescribeLogGroups:
           input_fields:
             LogGroupNamePrefix: Name
+          output_fields:
+            LogGroupName: Name
         CreateLogGroup:
           input_fields:
             LogGroupName: Name
@@ -293,6 +295,11 @@ resources:
         template_path: hooks/log_group/sdk_read_many_post_set_output.go.tpl
     update_operation:
       custom_method_name: customUpdateLogGroup
+    # DescribeLogGroups filters by name prefix: skip log groups whose name
+    # only starts with this one's.
+    list_operation:
+      match_fields:
+        - Name
   ResourcePolicy:
     # ResourcePolicy has no single mandatory identifier: account-scoped policies
     # are keyed by PolicyName while resource-scoped policies are keyed by
