@@ -76,8 +76,10 @@ def get(log_group_name: str):
     """
     c = boto3.client('logs')
     resp = c.describe_log_groups(logGroupNamePrefix=log_group_name)
-    if len(resp['logGroups']) == 1:
-        return resp['logGroups'][0]
+    # The prefix also matches log groups whose name only starts with this one.
+    for log_group in resp['logGroups']:
+        if log_group['logGroupName'] == log_group_name:
+            return log_group
     return None
 
 def get_subscription_filters(log_group_name: str):

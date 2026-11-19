@@ -16,6 +16,7 @@
 
 import time
 
+import boto3
 import pytest
 from acktest import tags
 from acktest.k8s import resource as k8s
@@ -119,6 +120,59 @@ class TestLogGroup:
         )
 
         
+
+    def test_longer_named_log_group_is_not_taken(self):
+        """A log group whose name only starts with the CR's name is not taken
+        for the CR's own log group: the controller creates and deletes the
+        CR's log group and leaves the other one alone.
+        """
+        # A longer suffix than the fixture's, so the name never equals the
+        # name of a test running in parallel.
+        log_group_name = random_suffix_name("ack-test-log-group", 24)
+        longer_name = log_group_name + "-other"
+        ref = k8s.CustomResourceReference(
+            CRD_GROUP, CRD_VERSION, RESOURCE_PLURAL,
+            log_group_name, namespace="default",
+        )
+
+        c = boto3.client('logs')
+        c.create_log_group(logGroupName=longer_name)
+        created = cleaned_up = False
+        try:
+            replacements = REPLACEMENT_VALUES.copy()
+            replacements["LOG_GROUP_NAME"] = log_group_name
+            resource_data = load_resource(
+                "log_group",
+                additional_replacements=replacements,
+            )
+            k8s.create_custom_resource(ref, resource_data)
+            created = True
+            cr = k8s.wait_resource_consumed_by_controller(ref)
+            assert cr is not None
+
+            condition.assert_synced(ref)
+            latest = log_group.get(log_group_name)
+            assert latest is not None
+            cr = k8s.get_resource(ref)
+            arn = cr['status']['ackResourceMetadata']['arn']
+            assert arn in (latest['arn'], latest['logGroupArn'])
+
+            _, deleted = k8s.delete_custom_resource(ref, 3, 10)
+            assert deleted
+            log_group.wait_until_deleted(log_group_name)
+            cleaned_up = True
+            assert log_group.get(longer_name) is not None
+        finally:
+            # On a failure, delete the CR and its log group too, so that a
+            # later run with the same name does not find the log group.
+            try:
+                if created and not cleaned_up:
+                    _, deleted = k8s.delete_custom_resource(ref, 3, 10)
+                    if deleted:
+                        log_group.wait_until_deleted(log_group_name)
+            except:
+                pass
+            c.delete_log_group(logGroupName=longer_name)
 
     @pytest.mark.resource_data({'resource_file': 'invalid/log_group_invalid_parameter'})
     def test_terminal_condition_invalid_parameter(self, _log_group):

@@ -119,6 +119,16 @@ func (rm *resourceManager) sdkFind(
 			tmpARN := ackv1alpha1.AWSResourceName(*elem.LogGroupArn)
 			ko.Status.ACKResourceMetadata.ARN = &tmpARN
 		}
+		if elem.LogGroupName != nil {
+			if ko.Spec.Name != nil {
+				if *elem.LogGroupName != *ko.Spec.Name {
+					continue
+				}
+			}
+			ko.Spec.Name = elem.LogGroupName
+		} else {
+			ko.Spec.Name = nil
+		}
 		if elem.MetricFilterCount != nil {
 			metricFilterCountCopy := int64(*elem.MetricFilterCount)
 			ko.Status.MetricFilterCount = &metricFilterCountCopy
